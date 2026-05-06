@@ -70,6 +70,10 @@ class PaymentProvider {
         return true
     }
 
+    isInitializationConfigured () {
+        return this.isConfigured()
+    }
+
     getCapabilities () {
         return {
             canInitializePayment: true,

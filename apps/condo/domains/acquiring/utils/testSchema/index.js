@@ -71,6 +71,7 @@ const { RECORD_MANUAL_RENT_PAYMENT_MUTATION } = require('@condo/domains/acquirin
 const { CONFIRM_PAYMENT_MUTATION } = require('@condo/domains/acquiring/gql')
 const { REVERSE_MANUAL_RENT_PAYMENT_MUTATION } = require('@condo/domains/acquiring/gql')
 const {
+    PaymentProviderCredential: PaymentProviderCredentialGQL,
     PaymentStatusChangeWebhookUrl: PaymentStatusChangeWebhookUrlGQL,
 } = require('@condo/domains/acquiring/gql')
 const {
@@ -91,6 +92,7 @@ const PaymentsFilterTemplate = generateGQLTestUtils(PaymentsFilterTemplateGQL)
 const RecurrentPaymentContext = generateGQLTestUtils(RecurrentPaymentContextGQL)
 const RecurrentPayment = generateGQLTestUtils(RecurrentPaymentGQL)
 const PaymentsFile = generateGQLTestUtils(PaymentsFileGQL)
+const PaymentProviderCredential = generateGQLTestUtils(PaymentProviderCredentialGQL)
 const PaymentStatusChangeWebhookUrl = generateGQLTestUtils(PaymentStatusChangeWebhookUrlGQL)
 /* AUTOGENERATE MARKER <CONST> */
 
@@ -694,6 +696,43 @@ async function updateTestPaymentStatusChangeWebhookUrl (client, id, extraAttrs =
     const obj = await PaymentStatusChangeWebhookUrl.update(client, id, attrs)
     return [obj, attrs]
 }
+
+async function createTestPaymentProviderCredential (client, organization, extraAttrs = {}) {
+    if (!client) throw new Error('no client')
+    if (!organization || !organization.id) throw new Error('no organization.id')
+
+    const sender = { dv: 1, fingerprint: faker.random.alphaNumeric(8) }
+    const attrs = {
+        dv: 1,
+        sender,
+        organization: { connect: { id: organization.id } },
+        provider: 'paystack',
+        environment: 'test',
+        secretKey: 'sk_test_payment_provider_credential',
+        currency: 'GHS',
+        initiationEnabled: true,
+        verificationEnabled: true,
+        webhookEnabled: true,
+        isEnabled: true,
+        ...extraAttrs,
+    }
+    const obj = await PaymentProviderCredential.create(client, attrs)
+    return [obj, attrs]
+}
+
+async function updateTestPaymentProviderCredential (client, id, extraAttrs = {}) {
+    if (!client) throw new Error('no client')
+    if (!id) throw new Error('no id')
+
+    const sender = { dv: 1, fingerprint: faker.random.alphaNumeric(8) }
+    const attrs = {
+        dv: 1,
+        sender,
+        ...extraAttrs,
+    }
+    const obj = await PaymentProviderCredential.update(client, id, attrs)
+    return [obj, attrs]
+}
 /* AUTOGENERATE MARKER <FACTORY> */
 
 // Utils used to generate a bunch of entities for working with MultiPayments
@@ -993,6 +1032,7 @@ module.exports = {
     calculateFeeForReceiptByTestClient,
     generateQRCode,
     PaymentsFile, createTestPaymentsFile, updateTestPaymentsFile,
+    PaymentProviderCredential, createTestPaymentProviderCredential, updateTestPaymentProviderCredential,
     setPaymentPosReceiptUrlByTestClient,
     recordManualRentPaymentByTestClient,
     confirmPaymentByTestClient,

@@ -116,16 +116,20 @@ function normalizePaystackVerificationResult ({
 
     const providerStatus = responseData.status ? String(responseData.status) : null
     const outcome = getVerificationOutcome(providerStatus)
+    const convertedAmount = convertPaystackSubunitsToMajorAmount(
+        responseData.amount,
+        responseData.currency || responseData.currencyCode || null
+    )
+    const normalizedCurrencyCode = normalizeCurrencyCode(
+        responseData.currency || responseData.currencyCode || null
+    )
 
     return {
         provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
         confirmed: outcome.confirmed,
         confirmedAt: resolveConfirmedAt(providerStatus, confirmedAt, responseData),
-        amount: convertPaystackSubunitsToMajorAmount(
-            responseData.amount,
-            responseData.currency || responseData.currencyCode || null
-        ),
-        currencyCode: normalizeCurrencyCode(responseData.currency || responseData.currencyCode || null),
+        amount: convertedAmount,
+        currencyCode: normalizedCurrencyCode,
         status: outcome.status,
         internalStatus: outcome.internalStatus,
         providerStatus,
@@ -135,6 +139,19 @@ function normalizePaystackVerificationResult ({
         metadata: {
             verification: {
                 endpoint: '/transaction/verify/:reference',
+            },
+            amountConvention: {
+                internal: {
+                    amount: convertedAmount,
+                    unit: 'major',
+                },
+                provider: {
+                    amount: responseData.amount === null || responseData.amount === undefined
+                        ? null
+                        : String(responseData.amount),
+                    unit: 'subunit',
+                },
+                currencyCode: normalizedCurrencyCode,
             },
             ...(outcome.rationale ? { rationale: outcome.rationale } : {}),
         },

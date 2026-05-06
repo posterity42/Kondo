@@ -68,6 +68,17 @@ describe('PaystackVerificationClient', () => {
                 providerReference: 'paystack-ref-001',
             },
             metadata: {
+                amountConvention: {
+                    internal: {
+                        amount: '150.00',
+                        unit: 'major',
+                    },
+                    provider: {
+                        amount: '15000',
+                        unit: 'subunit',
+                    },
+                    currencyCode: 'NGN',
+                },
                 verification: {
                     endpoint: '/transaction/verify/:reference',
                 },
@@ -225,5 +236,36 @@ describe('PaystackVerificationClient', () => {
     test('converts between internal major units and Paystack subunits explicitly', () => {
         expect(convertMajorAmountToPaystackSubunits('150', 'NGN')).toBe('15000')
         expect(convertPaystackSubunitsToMajorAmount('15000', 'NGN')).toBe('150.00')
+    })
+
+    test('includes an explicit amount conversion summary in normalized verification results', async () => {
+        const client = createPaystackVerificationClient({
+            fetch: jest.fn().mockResolvedValue(createJsonResponse({
+                status: true,
+                data: {
+                    status: 'success',
+                    amount: '5015',
+                    currency: 'GHS',
+                    reference: 'paystack-ref-001',
+                },
+            })),
+        })
+
+        const result = await client.verifyTransaction({
+            providerReference: 'paystack-ref-001',
+            secretKey: 'sk_test_paystack',
+        })
+
+        expect(result.metadata.amountConvention).toEqual({
+            internal: {
+                amount: '50.15',
+                unit: 'major',
+            },
+            provider: {
+                amount: '5015',
+                unit: 'subunit',
+            },
+            currencyCode: 'GHS',
+        })
     })
 })

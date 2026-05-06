@@ -1,6 +1,10 @@
 import {
+    buildResidentRentPaymentInitiationBoundary,
     buildRentalUnitSelectWhere,
     buildResidentRentalDashboardDataSource,
+    getResidentRentPaymentErrorMessage,
+    getResidentRentPaymentLink,
+    getResidentRentPaymentResultMessage,
     getRentalUnitDisplayName,
 } from './rental'
 
@@ -66,5 +70,119 @@ describe('rental client helpers', () => {
             { label: 'Unpaid rent charges', value: 2 },
             { label: 'Linked unpaid invoices', value: 1 },
         ])
+    })
+
+    test('builds a paystack initiation payload from resident arrears dashboard data', () => {
+        expect(buildResidentRentPaymentInitiationBoundary({
+            residentId: 'resident-1',
+            organizationId: 'organization-1',
+            payerContact: {
+                email: 'resident@example.com',
+                phone: '+233000000000',
+            },
+            dashboard: {
+                arrearsTotal: '25.00000000',
+                currentRentalUnit: {
+                    id: 'unit-1',
+                    name: '301',
+                    unitType: 'room',
+                    property: {
+                        id: 'property-1',
+                    },
+                },
+                unpaidRentCharges: [
+                    { id: 'charge-1', currencyCode: 'GHS' },
+                    { id: 'charge-2', currencyCode: 'GHS' },
+                ],
+            },
+        })).toEqual({
+            input: {
+                dv: 1,
+                organization: { id: 'organization-1' },
+                tenant: { id: 'resident-1' },
+                property: { id: 'property-1' },
+                rentalUnit: { id: 'unit-1' },
+                amount: '25.00000000',
+                currency: 'GHS',
+                providerCode: 'paystack',
+                purpose: 'Online rent payment for unpaid rent charges',
+                payerContact: {
+                    email: 'resident@example.com',
+                    phone: '+233000000000',
+                },
+                rentContext: {
+                    source: 'residentRentalDashboard',
+                    residentId: 'resident-1',
+                    unpaidRentChargeIds: ['charge-1', 'charge-2'],
+                },
+            },
+            disabledReason: null,
+        })
+    })
+
+    test('blocks rent payment initiation when there are no unpaid rent charges', () => {
+        expect(buildResidentRentPaymentInitiationBoundary({
+            residentId: 'resident-1',
+            organizationId: 'organization-1',
+            payerContact: {
+                phone: '+233000000000',
+            },
+            dashboard: {
+                arrearsTotal: '0.00000000',
+                currentRentalUnit: {
+                    id: 'unit-1',
+                    name: '301',
+                    unitType: 'room',
+                    property: {
+                        id: 'property-1',
+                    },
+                },
+                unpaidRentCharges: [],
+            },
+        })).toEqual({
+            input: null,
+            disabledReason: 'No unpaid rent charges are available for online payment.',
+        })
+    })
+
+    test('maps safe initiation result data into a user-facing payment link and message', () => {
+        const result = {
+            amount: '25.00000000',
+            currency: 'GHS',
+            paymentId: 'payment-1',
+            providerReference: 'paystack-init-ref-1',
+            authorizationUrl: 'https://checkout.paystack.com/paystack-init-ref-1',
+            actionTaken: 'duplicate_noop',
+        }
+
+        expect(getResidentRentPaymentLink(result)).toBe('https://checkout.paystack.com/paystack-init-ref-1')
+        expect(getResidentRentPaymentResultMessage(result)).toBe('An existing pending rent payment was reused. Continue with the secure payment link below.')
+    })
+
+    test('maps sanitized recovery statuses into resident-facing messages', () => {
+        expect(getResidentRentPaymentResultMessage({
+            actionTaken: 'recovered_retry',
+            authorizationUrl: 'https://checkout.paystack.com/paystack-init-ref-2',
+        })).toBe('The previous pending rent payment could not be reused. Continue with the new secure payment link below.')
+
+        expect(getResidentRentPaymentResultMessage({
+            actionTaken: 'pending_noop',
+        })).toBe('A previous rent payment is still pending verification. Please wait a moment before trying again.')
+
+        expect(getResidentRentPaymentResultMessage({
+            actionTaken: 'confirmed',
+        })).toBe('The earlier pending rent payment has already been confirmed.')
+    })
+
+    test('maps sanitized initiation error messages for the resident payment boundary', () => {
+        expect(getResidentRentPaymentErrorMessage({
+            graphQLErrors: [{
+                message: 'Provider "paystack" failed to initialize online rent payment',
+            }],
+        })).toBe('The payment provider could not start the rent payment right now. Please try again later.')
+
+        expect(getResidentRentPaymentErrorMessage({
+            message: 'Provider "paystack" is not configured for online rent payment initiation',
+        })).toBe('Online rent payment is not available right now.')
     })
 })

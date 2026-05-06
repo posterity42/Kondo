@@ -11,13 +11,51 @@ const { PaymentProvider } = require('./PaymentProvider')
 const {
     convertMajorAmountToPaystackSubunits,
     createPaystackVerificationClient,
+    DEFAULT_PAYSTACK_API_URL,
     getVerificationOutcome,
     normalizeCurrencyCode,
 } = require('./PaystackVerificationClient')
 const {
     PaymentProviderConfigurationError,
+    PaymentProviderRequestError,
+    PaymentProviderResponseError,
     PaymentProviderValidationError,
 } = require('./paymentProviderErrors')
+
+const INITIALIZE_TRANSACTION_OPERATION = 'initializeTransaction'
+
+function resolveStrictBooleanOption (value) {
+    if (value === true || value === false) return value
+    if (value === null || value === undefined) return false
+
+    return value === 'true'
+}
+
+function normalizeText (value) {
+    if (value === null || value === undefined) return null
+
+    const normalizedValue = String(value).trim()
+
+    return normalizedValue || null
+}
+
+function resolveFirstDefined (...values) {
+    for (const value of values) {
+        if (value !== undefined) return value
+    }
+
+    return undefined
+}
+
+function resolveFetch (fetchImpl) {
+    if (typeof fetchImpl === 'function') return fetchImpl
+    if (typeof global.fetch === 'function') return global.fetch.bind(global)
+
+    throw new PaymentProviderConfigurationError(
+        RENT_PAYMENT_PROVIDER_PAYSTACK,
+        'paystack initialization requires a fetch implementation'
+    )
+}
 
 class PaystackPaymentProvider extends PaymentProvider {
     get provider () {
@@ -25,7 +63,11 @@ class PaystackPaymentProvider extends PaymentProvider {
     }
 
     isConfigured () {
-        return Boolean(this.getSecretKey())
+        return Boolean(this.getSecretKey() && this.getIsEnabled())
+    }
+
+    isInitializationConfigured () {
+        return Boolean(this.getSecretKey() && this.getIsEnabled() && this.getInitiationEnabled())
     }
 
     getStatusMap () {
@@ -66,8 +108,95 @@ class PaystackPaymentProvider extends PaymentProvider {
         return this.options.secretKey ||
             this.options.paystackSecretKey ||
             (this.options.credentials && this.options.credentials.secretKey) ||
-            process.env.PAYSTACK_SECRET_KEY ||
             null
+    }
+
+    getWebhookSecret () {
+        return this.options.webhookSecret ||
+            this.options.paystackWebhookSecret ||
+            (this.options.credentials && this.options.credentials.webhookSecret) ||
+            this.getSecretKey() ||
+            null
+    }
+
+    getPublicKey () {
+        return this.options.publicKey ||
+            this.options.paystackPublicKey ||
+            (this.options.credentials && this.options.credentials.publicKey) ||
+            null
+    }
+
+    getCurrencyCode () {
+        return normalizeCurrencyCode(
+            this.options.currency ||
+            this.options.currencyCode ||
+            this.options.paystackCurrency ||
+            (this.options.credentials && this.options.credentials.currency) ||
+            'GHS'
+        )
+    }
+
+    getIsEnabled () {
+        const resolvedValue = resolveFirstDefined(
+            this.options.isEnabled,
+            this.options.paystackIsEnabled,
+            this.options.credentials && this.options.credentials.isEnabled,
+        )
+
+        if (resolvedValue === undefined) return true
+
+        return resolveStrictBooleanOption(resolvedValue)
+    }
+
+    getInitiationEnabled () {
+        return resolveStrictBooleanOption(
+            resolveFirstDefined(
+                this.options.initiationEnabled,
+                this.options.paystackInitiationEnabled,
+                this.options.credentials && this.options.credentials.initiationEnabled,
+                this.options.credentials && this.options.credentials.paystackInitiationEnabled,
+            )
+        )
+    }
+
+    getVerificationEnabled () {
+        return resolveStrictBooleanOption(
+            resolveFirstDefined(
+                this.options.verificationEnabled,
+                this.options.paystackVerificationEnabled,
+                this.options.credentials && this.options.credentials.verificationEnabled,
+                true
+            )
+        )
+    }
+
+    getWebhookEnabled () {
+        return resolveStrictBooleanOption(
+            resolveFirstDefined(
+                this.options.webhookEnabled,
+                this.options.paystackWebhookEnabled,
+                this.options.credentials && this.options.credentials.webhookEnabled,
+                true
+            )
+        )
+    }
+
+    getBaseUrl () {
+        return this.options.baseUrl ||
+            this.options.paystackBaseUrl ||
+            DEFAULT_PAYSTACK_API_URL
+    }
+
+    getCallbackUrl () {
+        return normalizeText(
+            this.options.callbackUrl ||
+            this.options.paystackCallbackUrl ||
+            (this.options.credentials && (
+                this.options.credentials.callbackUrl ||
+                this.options.credentials.paystackCallbackUrl
+            )) ||
+            null
+        )
     }
 
     getWebhookSignatureHeader (requestMetadata = {}) {
@@ -93,11 +222,19 @@ class PaystackPaymentProvider extends PaymentProvider {
     }
 
     async verifyWebhookSignature (payload, requestMetadata = {}) {
-        const secretKey = this.getSecretKey()
+        const webhookSecret = this.getWebhookSecret()
         const signature = this.getWebhookSignatureHeader(requestMetadata)
         const rawBody = this.getWebhookRawBody(payload, requestMetadata)
 
-        if (!secretKey) {
+        if (!this.getIsEnabled() || !this.getWebhookEnabled()) {
+            return {
+                signatureVerified: false,
+                signatureVerificationRequired: true,
+                signatureVerificationReason: 'Paystack webhook handling is disabled for this credential',
+            }
+        }
+
+        if (!webhookSecret) {
             return {
                 signatureVerified: false,
                 signatureVerificationRequired: true,
@@ -122,7 +259,7 @@ class PaystackPaymentProvider extends PaymentProvider {
         }
 
         const digest = crypto
-            .createHmac('sha512', secretKey)
+            .createHmac('sha512', webhookSecret)
             .update(rawBody)
             .digest('hex')
         const normalizedSignature = String(signature).trim().toLowerCase()
@@ -180,21 +317,147 @@ class PaystackPaymentProvider extends PaymentProvider {
         }
     }
 
+    getPayerEmail (paymentData = {}) {
+        const payer = paymentData.payer && typeof paymentData.payer === 'object' ? paymentData.payer : {}
+
+        return normalizeText(payer.email || paymentData.payerEmail || paymentData.email)
+    }
+
+    getPayerPhone (paymentData = {}) {
+        const payer = paymentData.payer && typeof paymentData.payer === 'object' ? paymentData.payer : {}
+
+        return normalizeText(payer.phone || paymentData.payerPhone || paymentData.phone)
+    }
+
+    buildInitializationRequestBody (paymentData = {}) {
+        const payerEmail = this.getPayerEmail(paymentData)
+        const payerPhone = this.getPayerPhone(paymentData)
+
+        if (!payerEmail) {
+            throw new PaymentProviderValidationError(
+                this.provider,
+                'payer.email',
+                'Paystack payment initialization requires payer email'
+            )
+        }
+
+        const requestBody = {
+            email: payerEmail,
+            amount: convertMajorAmountToPaystackSubunits(
+                paymentData.amount,
+                paymentData.currency || paymentData.currencyCode || this.getCurrencyCode()
+            ),
+            currency: normalizeCurrencyCode(
+                paymentData.currency || paymentData.currencyCode || this.getCurrencyCode()
+            ),
+        }
+        const providerReference = normalizeText(this.mapProviderReference(paymentData))
+        const callbackUrl = this.getCallbackUrl()
+
+        if (providerReference) {
+            requestBody.reference = providerReference
+        }
+        if (callbackUrl) {
+            requestBody.callback_url = callbackUrl
+        }
+        if (payerPhone) {
+            requestBody.metadata = JSON.stringify({
+                payerPhone,
+            })
+        }
+
+        return requestBody
+    }
+
     async initializePayment (paymentData = {}) {
         if (!this.getSecretKey()) {
             throw new PaymentProviderConfigurationError(this.provider)
         }
+        if (!this.getIsEnabled()) {
+            throw new PaymentProviderConfigurationError(
+                this.provider,
+                'paystack credential is disabled'
+            )
+        }
+        if (!this.getInitiationEnabled()) {
+            throw new PaymentProviderConfigurationError(
+                this.provider,
+                'paystack payment initiation is disabled'
+            )
+        }
 
         this.validatePaymentData(paymentData)
+        const request = resolveFetch(this.options.fetch)
+        const requestBody = this.buildInitializationRequestBody(paymentData)
+        const url = `${String(this.getBaseUrl()).replace(/\/$/, '')}/transaction/initialize`
+
+        let response
+        try {
+            response = await request(url, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${String(this.getSecretKey()).trim()}`,
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            })
+        } catch (error) {
+            throw new PaymentProviderRequestError(
+                this.provider,
+                INITIALIZE_TRANSACTION_OPERATION,
+                'Paystack initialization request failed',
+                { cause: error }
+            )
+        }
+
+        let payload
+        try {
+            payload = await response.json()
+        } catch (error) {
+            throw new PaymentProviderResponseError(
+                this.provider,
+                INITIALIZE_TRANSACTION_OPERATION,
+                'Paystack initialization response is malformed: invalid JSON'
+            )
+        }
+
+        if (!response.ok) {
+            throw new PaymentProviderRequestError(
+                this.provider,
+                INITIALIZE_TRANSACTION_OPERATION,
+                `Paystack initialization request failed with status ${response.status}`
+            )
+        }
+
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !payload.data || typeof payload.data !== 'object') {
+            throw new PaymentProviderResponseError(
+                this.provider,
+                INITIALIZE_TRANSACTION_OPERATION,
+                'Paystack initialization response is malformed: missing data payload'
+            )
+        }
+
+        const authorizationUrl = normalizeText(payload.data.authorization_url)
+        const paymentUrl = normalizeText(payload.data.authorization_url)
+        const providerReference = normalizeText(payload.data.reference) || normalizeText(requestBody.reference)
+
+        if (!authorizationUrl || !providerReference) {
+            throw new PaymentProviderResponseError(
+                this.provider,
+                INITIALIZE_TRANSACTION_OPERATION,
+                'Paystack initialization response is malformed: missing required transaction fields'
+            )
+        }
 
         return {
             provider: this.provider,
             status: PAYMENT_INIT_STATUS,
             providerStatus: 'initialized',
-            authorizationUrl: null,
-            paymentUrl: null,
-            externalTransactionId: this.mapProviderReference(paymentData),
-            paymentData,
+            providerReference,
+            authorizationUrl,
+            paymentUrl,
+            externalTransactionId: providerReference,
             metadata: {
                 amountConvention: {
                     internal: {
@@ -202,16 +465,35 @@ class PaystackPaymentProvider extends PaymentProvider {
                         unit: 'major',
                     },
                     provider: {
-                        amount: convertMajorAmountToPaystackSubunits(paymentData.amount, paymentData.currency || paymentData.currencyCode),
+                        amount: requestBody.amount,
                         unit: 'subunit',
                     },
+                    currencyCode: requestBody.currency,
                 },
-                stub: true,
+                initialization: {
+                    endpoint: '/transaction/initialize',
+                },
             },
         }
     }
 
     async verifyPayment (paymentData = {}) {
+        if (!this.getSecretKey()) {
+            throw new PaymentProviderConfigurationError(this.provider)
+        }
+        if (!this.getIsEnabled()) {
+            throw new PaymentProviderConfigurationError(
+                this.provider,
+                'paystack credential is disabled'
+            )
+        }
+        if (!this.getVerificationEnabled()) {
+            throw new PaymentProviderConfigurationError(
+                this.provider,
+                'paystack payment verification is disabled'
+            )
+        }
+
         const client = createPaystackVerificationClient(this.options)
         const providerReference = paymentData.providerReference || this.mapProviderReference(paymentData)
 
@@ -225,6 +507,17 @@ class PaystackPaymentProvider extends PaymentProvider {
     }
 
     async handleWebhook (payload, requestMetadata = {}) {
+        if (!this.getIsEnabled() || !this.getWebhookEnabled()) {
+            return this.buildWebhookResponse({
+                acknowledged: true,
+                processed: false,
+                payload,
+                metadata: {
+                    disabled: true,
+                },
+            })
+        }
+
         const providerStatus = this.resolveProviderStatus(payload)
         const outcome = this.getVerificationOutcome(providerStatus)
         const signatureMetadata = await this.resolveWebhookSignatureMetadata(payload, requestMetadata)
@@ -260,6 +553,8 @@ class PaystackPaymentProvider extends PaymentProvider {
 
 module.exports = {
     PaymentProviderConfigurationError,
+    PaymentProviderRequestError,
+    PaymentProviderResponseError,
     PaymentProviderValidationError,
     PaystackPaymentProvider,
 }

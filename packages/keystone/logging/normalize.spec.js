@@ -60,4 +60,24 @@ describe('normalizeVariables', () => {
         expect(result.secret).toBe('***')
         expect(result.receiptToken).toBe('***')
     })
+
+    it('redacts sensitive headers and bearer tokens in nested log payloads', () => {
+        const input = {
+            headers: {
+                authorization: 'Bearer abc123',
+                cookie: 'keystone.sid=session-id; theme=dark',
+                'x-api-key': 'key',
+                'x-custom-header': 'keep',
+            },
+            message: 'retry with Bearer nested-token',
+        }
+
+        const result = JSON.parse(normalizeVariables(input))
+
+        expect(result.headers.authorization).toBe('***')
+        expect(result.headers.cookie).toBe('keystone.sid=***; theme=***')
+        expect(result.headers['x-api-key']).toBe('***')
+        expect(result.headers['x-custom-header']).toBe('keep')
+        expect(result.message).toBe('retry with Bearer ***')
+    })
 })

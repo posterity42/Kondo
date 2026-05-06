@@ -1,3 +1,5 @@
+const { sanitizeLogValue } = require('./sanitize')
+
 const SENSITIVE_KEY_REGEX = /(password|phone|secret|token|receipt)/i
 const SENSITIVE_KEYS_OVERRIDE = [
     'groupedReceipts',
@@ -35,7 +37,7 @@ function redactSensitiveValues (value) {
 function normalizeVariables (object) {
     if (!object) return undefined
     const data = JSON.parse(JSON.stringify(object))
-    const redacted = redactSensitiveValues(data)
+    const redacted = sanitizeLogValue(redactSensitiveValues(data))
     return JSON.stringify(redacted)
 }
 

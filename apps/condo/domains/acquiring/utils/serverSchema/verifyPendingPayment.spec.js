@@ -2,11 +2,14 @@
  * @jest-environment node
  */
 
+const { EncryptionManager } = require('@open-condo/keystone/crypto/EncryptionManager')
+
 const stores = {}
 const counters = {}
+const encryptionManager = new EncryptionManager()
 
 function resetStores () {
-    for (const listKey of ['Organization', 'Payment', 'TenantLedger', 'LedgerEntry', 'PaymentAllocation', 'PaymentReceipt', 'RentCharge']) {
+    for (const listKey of ['Organization', 'Payment', 'PaymentProviderCredential', 'TenantLedger', 'LedgerEntry', 'PaymentAllocation', 'PaymentReceipt', 'RentCharge']) {
         stores[listKey] = []
         counters[listKey] = 0
     }
@@ -113,6 +116,7 @@ function addPendingPayment (attrs = {}) {
         currencyCode: 'NGN',
         provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
         providerReference: 'paystack-ref-1',
+        providerEnvironment: 'test',
         externalTransactionId: 'paystack-ref-1',
         status: PAYMENT_PROCESSING_STATUS,
         confirmedAt: null,
@@ -123,6 +127,27 @@ function addPendingPayment (attrs = {}) {
 
     stores.Payment.push(payment)
     return payment
+}
+
+function addPaymentProviderCredential (attrs = {}) {
+    const credential = {
+        id: `credential-${stores.PaymentProviderCredential.length + 1}`,
+        organization: 'organization-1',
+        provider: 'paystack',
+        environment: 'test',
+        secretKey: encryptionManager.encrypt('sk_test_paystack_org_verification'),
+        webhookSecret: null,
+        currency: 'GHS',
+        initiationEnabled: true,
+        verificationEnabled: true,
+        webhookEnabled: true,
+        isEnabled: true,
+        deletedAt: null,
+        ...attrs,
+    }
+
+    stores.PaymentProviderCredential.push(credential)
+    return credential
 }
 
 function addRentCharge (attrs = {}) {
@@ -149,16 +174,19 @@ function addRentCharge (attrs = {}) {
 
 describe('verifyPendingPayment', () => {
     const originalPaystackSecret = process.env.PAYSTACK_SECRET_KEY
+    const originalPaystackAllowFallback = process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK
 
     beforeEach(() => {
         resetStores()
         jest.clearAllMocks()
         process.env.PAYSTACK_SECRET_KEY = 'sk_test_paystack'
+        process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK = 'true'
         stores.Organization.push({ id: 'organization-1', receiptCode: 'KONDO', deletedAt: null })
     })
 
     afterAll(() => {
         process.env.PAYSTACK_SECRET_KEY = originalPaystackSecret
+        process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK = originalPaystackAllowFallback
     })
 
     test('confirmed Paystack verification confirms existing pending payment', async () => {
@@ -201,6 +229,41 @@ describe('verifyPendingPayment', () => {
         expect(stores.PaymentReceipt).toHaveLength(1)
         expect(stores.LedgerEntry).toHaveLength(1)
         expect(fetch).toHaveBeenCalledTimes(1)
+    })
+
+    test('uses the credential that belongs to the payment organization', async () => {
+        addPendingPayment()
+        addPaymentProviderCredential({
+            organization: 'organization-1',
+            secretKey: encryptionManager.encrypt('sk_test_org_1_verification'),
+        })
+        addPaymentProviderCredential({
+            organization: 'organization-2',
+            secretKey: encryptionManager.encrypt('sk_test_org_2_verification'),
+        })
+        const fetch = jest.fn().mockResolvedValue(createJsonResponse({
+            status: true,
+            data: {
+                status: 'pending',
+                amount: '15000',
+                currency: 'NGN',
+                reference: 'paystack-ref-1',
+            },
+        }))
+
+        await verifyPendingPayment({}, {
+            providerCode: RENT_PAYMENT_PROVIDER_PAYSTACK,
+            providerReference: 'paystack-ref-1',
+        }, { fetch })
+
+        expect(fetch).toHaveBeenCalledWith(
+            'https://api.paystack.co/transaction/verify/paystack-ref-1',
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: 'Bearer sk_test_org_1_verification',
+                }),
+            })
+        )
     })
 
     test('failed Paystack verification marks existing pending payment ERROR without allocation', async () => {

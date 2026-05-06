@@ -397,6 +397,13 @@ const Payment = new GQLListSchema('Payment', {
             isRequired: false,
         },
 
+        providerEnvironment: {
+            schemaDoc: 'Provider credential environment used for this online payment flow',
+            type: 'Text',
+            isRequired: false,
+            access: { read: false },
+        },
+
         providerInitResponse: {
             schemaDoc: 'Raw provider initialization response stored for pending online rent payment intents',
             type: 'Json',

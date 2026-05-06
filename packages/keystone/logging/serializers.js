@@ -3,6 +3,7 @@ const _toString = require('lodash/toString')
 const stdSerializers = require('pino-std-serializers')
 
 const { normalizeVariables } = require('./normalize')
+const { sanitizeHeaders, sanitizeLogValue } = require('./sanitize')
 
 const { safeFormatError } = require('../utils/errors/safeFormatError')
 
@@ -29,44 +30,6 @@ function toString (data) {
     return _toString(data)
 }
 
-const REDACTED_VALUE = '***'
-const SENSITIVE_HEADERS_REGEX = /^(authorization|proxy-authorization)$/i
-const SENSITIVE_RESPONSE_HEADERS_REGEX = /^set-cookie$/i
-const SENSITIVE_COOKIE_NAMES_REGEX = /^keystone\.sid$/i
-
-function redactCookieHeaderValue (cookieValue, sensitiveRegex) {
-    if (!cookieValue) return cookieValue
-    return cookieValue
-        .split(';')
-        .map((cookie) => {
-            const [name, ...rest] = cookie.split('=')
-            const normalizedName = name?.trim()
-            if (normalizedName && sensitiveRegex.test(normalizedName)) {
-                return `${normalizedName}=${REDACTED_VALUE}`
-            }
-            return cookie
-        })
-        .join(';')
-}
-
-function sanitizeHeaders (headers, {
-    sensitiveHeadersRegex = SENSITIVE_HEADERS_REGEX,
-    sensitiveCookieNamesRegex = SENSITIVE_COOKIE_NAMES_REGEX,
-    redactedValue = REDACTED_VALUE,
-} = {}) {
-    if (!headers) return headers
-    const sanitizedHeaders = { ...headers }
-    for (const headerName of Object.keys(sanitizedHeaders)) {
-        if (sensitiveHeadersRegex.test(headerName)) {
-            sanitizedHeaders[headerName] = redactedValue
-        }
-    }
-    if (Object.hasOwn(sanitizedHeaders, 'cookie')) {
-        sanitizedHeaders.cookie = redactCookieHeaderValue(sanitizedHeaders.cookie, sensitiveCookieNamesRegex)
-    }
-    return sanitizedHeaders
-}
-
 function sanitizeReq (req) {
     const data = stdSerializers.req(req)
     if (!data || !data.headers) return data
@@ -77,7 +40,7 @@ function sanitizeReq (req) {
 function sanitizeRes (res) {
     const data = stdSerializers.res(res)
     if (!data || !data.headers) return data
-    const headers = sanitizeHeaders(data.headers, { sensitiveHeadersRegex: SENSITIVE_RESPONSE_HEADERS_REGEX })
+    const headers = sanitizeHeaders(data.headers)
     return { ...data, headers }
 }
 
@@ -111,7 +74,7 @@ function combineSerializers (...serializers) {
 
 const SERIALIZERS = {
     /** Default logger message field */
-    msg: toString,
+    msg: (data) => toString(sanitizeLogValue(data)),
 
     /**
      * Main field to store large / dynamic data.
@@ -145,14 +108,14 @@ const SERIALIZERS = {
      * NOTE 2: safeFormatError works, but omits unknown fields (stdSerializers.err has "for key in err"),
      * right now seems like it's ok, but if we need to add more fields, we should modify our serializer
      *  */
-    err: combineSerializers(safeFormatError, propertyStringifySerializer('errors')),
+    err: combineSerializers(safeFormatError, sanitizeLogValue, propertyStringifySerializer('errors')),
 
     /**
      * @deprecated used by graphql-error logger to format errors,
      * for generic errors consider using err instead
      * (you don't need safeFormat on bots / clients, since it'll be already formatted by API)
      * */
-    error: combineSerializers(safeFormatError, propertyStringifySerializer('errors')),
+    error: combineSerializers(safeFormatError, sanitizeLogValue, propertyStringifySerializer('errors')),
 
     /** Used to collect memory usage via getHeapFree */
     mem: raw,
@@ -204,7 +167,7 @@ const SERIALIZERS = {
     hostname: toString,
 
     /** Request headers */
-    headers: toString,
+    headers: (data) => toString(sanitizeHeaders(data)),
 
     /** name of client, bot, integration, making a request */
     clientName: toString,

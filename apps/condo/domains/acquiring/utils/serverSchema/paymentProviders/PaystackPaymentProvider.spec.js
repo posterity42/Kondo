@@ -11,6 +11,8 @@ const { RENT_PAYMENT_PROVIDER_PAYSTACK } = require('@condo/domains/acquiring/con
 
 const {
     PaymentProviderConfigurationError,
+    PaymentProviderRequestError,
+    PaymentProviderResponseError,
     PaymentProviderValidationError,
     PaystackPaymentProvider,
 } = require('./PaystackPaymentProvider')
@@ -30,10 +32,40 @@ const VALID_PAYMENT_DATA = {
     reference: 'paystack-ref-001',
 }
 
+function createJsonResponse (payload, overrides = {}) {
+    return {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(payload),
+        ...overrides,
+    }
+}
+
 describe('PaystackPaymentProvider.initializePayment', () => {
-    test('returns a stable pending initialization response without network requests', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
-        const fetchSpy = jest.spyOn(global, 'fetch')
+
+    test('treats initiationEnabled strictly and enables initialization only for boolean true or exact "true"', async () => {
+        expect(new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: '1' }).isInitializationConfigured()).toBe(false)
+        expect(new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: ' true ' }).isInitializationConfigured()).toBe(false)
+        expect(new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: 'TRUE' }).isInitializationConfigured()).toBe(false)
+        expect(new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: 'true' }).isInitializationConfigured()).toBe(true)
+        expect(new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true }).isInitializationConfigured()).toBe(true)
+    })
+
+    test('initializes a paystack transaction and returns a sanitised initiation payload', async () => {
+        const fetch = jest.fn().mockResolvedValue(createJsonResponse({
+            status: true,
+            message: 'Authorization URL created',
+            data: {
+                authorization_url: 'https://checkout.paystack.com/3ni8kdavz62431k',
+                access_code: '3ni8kdavz62431k',
+                reference: 'paystack-ref-001',
+            },
+        }))
+        const provider = new PaystackPaymentProvider({
+            secretKey: 'sk_test_paystack',
+            initiationEnabled: true,
+            fetch,
+        })
         const httpsRequestSpy = jest.spyOn(https, 'request')
 
         const result = await provider.initializePayment(VALID_PAYMENT_DATA)
@@ -42,10 +74,10 @@ describe('PaystackPaymentProvider.initializePayment', () => {
             provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
             status: PAYMENT_INIT_STATUS,
             providerStatus: 'initialized',
-            authorizationUrl: null,
-            paymentUrl: null,
+            providerReference: 'paystack-ref-001',
+            authorizationUrl: 'https://checkout.paystack.com/3ni8kdavz62431k',
+            paymentUrl: 'https://checkout.paystack.com/3ni8kdavz62431k',
             externalTransactionId: 'paystack-ref-001',
-            paymentData: VALID_PAYMENT_DATA,
             metadata: {
                 amountConvention: {
                     internal: {
@@ -56,16 +88,46 @@ describe('PaystackPaymentProvider.initializePayment', () => {
                         amount: '10000',
                         unit: 'subunit',
                     },
+                    currencyCode: 'NGN',
                 },
-                stub: true,
+                initialization: {
+                    endpoint: '/transaction/initialize',
+                },
             },
         })
-        expect(fetchSpy).not.toHaveBeenCalled()
+        expect(fetch).toHaveBeenCalledWith(
+            'https://api.paystack.co/transaction/initialize',
+            {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer sk_test_paystack',
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: 'resident@example.com',
+                    amount: '10000',
+                    currency: 'NGN',
+                    reference: 'paystack-ref-001',
+                }),
+            }
+        )
         expect(httpsRequestSpy).not.toHaveBeenCalled()
     })
 
     test('maps provider references from nested payload data', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+        const provider = new PaystackPaymentProvider({
+            secretKey: 'sk_test_paystack',
+            initiationEnabled: true,
+            fetch: jest.fn().mockResolvedValue(createJsonResponse({
+                status: true,
+                data: {
+                    authorization_url: 'https://checkout.paystack.com/nested',
+                    access_code: 'nested',
+                    reference: 'nested-paystack-ref-001',
+                },
+            })),
+        })
         const result = await provider.initializePayment({
             ...VALID_PAYMENT_DATA,
             reference: undefined,
@@ -77,8 +139,32 @@ describe('PaystackPaymentProvider.initializePayment', () => {
         expect(result.externalTransactionId).toBe('nested-paystack-ref-001')
     })
 
+    test('converts major units to paystack subunits in the initialization request', async () => {
+        const fetch = jest.fn().mockResolvedValue(createJsonResponse({
+            status: true,
+            data: {
+                authorization_url: 'https://checkout.paystack.com/rounding',
+                access_code: 'rounding',
+                reference: 'paystack-ref-002',
+            },
+        }))
+        const provider = new PaystackPaymentProvider({
+            secretKey: 'sk_test_paystack',
+            initiationEnabled: true,
+            fetch,
+        })
+
+        await provider.initializePayment({
+            ...VALID_PAYMENT_DATA,
+            amount: '100.55',
+            reference: 'paystack-ref-002',
+        })
+
+        expect(fetch.mock.calls[0][1].body).toContain('"amount":"10055"')
+    })
+
     test('requires amount', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true })
 
         await expect(provider.initializePayment({
             ...VALID_PAYMENT_DATA,
@@ -92,7 +178,7 @@ describe('PaystackPaymentProvider.initializePayment', () => {
     })
 
     test('requires currency', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true })
 
         await expect(provider.initializePayment({
             ...VALID_PAYMENT_DATA,
@@ -106,7 +192,7 @@ describe('PaystackPaymentProvider.initializePayment', () => {
     })
 
     test('requires payer email or phone', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true })
 
         await expect(provider.initializePayment({
             ...VALID_PAYMENT_DATA,
@@ -119,20 +205,24 @@ describe('PaystackPaymentProvider.initializePayment', () => {
         })
     })
 
-    test('accepts payer phone when email is not provided', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
-        const result = await provider.initializePayment({
+    test('requires payer email for paystack initialization requests', async () => {
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true })
+
+        await expect(provider.initializePayment({
             ...VALID_PAYMENT_DATA,
             payer: {
                 phone: '+2348000000000',
             },
+        })).rejects.toMatchObject({
+            name: 'PaymentProviderValidationError',
+            code: 'PAYMENT_PROVIDER_INVALID_PAYMENT_DATA',
+            provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
+            field: 'payer.email',
         })
-
-        expect(result.status).toBe(PAYMENT_INIT_STATUS)
     })
 
     test('requires organization or payment context', async () => {
-        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack', initiationEnabled: true })
 
         await expect(provider.initializePayment({
             amount: '100.00',
@@ -159,22 +249,62 @@ describe('PaystackPaymentProvider.initializePayment', () => {
         await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toThrow('paystack provider is not configured')
     })
 
+    test('fails safely when initiation is disabled even if the secret key exists', async () => {
+        const provider = new PaystackPaymentProvider({ secretKey: 'sk_test_paystack' })
+
+        await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toMatchObject({
+            name: 'PaymentProviderConfigurationError',
+            code: 'PAYMENT_PROVIDER_NOT_CONFIGURED',
+            provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
+        })
+        await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toThrow('paystack payment initiation is disabled')
+    })
+
+    test('sanitises provider request failures', async () => {
+        const provider = new PaystackPaymentProvider({
+            secretKey: 'sk_test_paystack',
+            initiationEnabled: true,
+            fetch: jest.fn().mockRejectedValue(new Error('socket hang up for sk_test_paystack')),
+        })
+
+        await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toMatchObject({
+            name: 'PaymentProviderRequestError',
+            code: 'PAYMENT_PROVIDER_REQUEST_FAILED',
+            provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
+            operation: 'initializeTransaction',
+        })
+        await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toThrow('Paystack initialization request failed')
+    })
+
+    test('sanitises malformed provider responses', async () => {
+        const provider = new PaystackPaymentProvider({
+            secretKey: 'sk_test_paystack',
+            initiationEnabled: true,
+            fetch: jest.fn().mockResolvedValue(createJsonResponse({
+                status: true,
+                data: {
+                    access_code: 'missing-url-and-reference',
+                },
+            })),
+        })
+
+        await expect(provider.initializePayment(VALID_PAYMENT_DATA)).rejects.toMatchObject({
+            name: 'PaymentProviderResponseError',
+            code: 'PAYMENT_PROVIDER_MALFORMED_RESPONSE',
+            provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
+            operation: 'initializeTransaction',
+        })
+    })
+
     test('exports typed configuration and validation errors', () => {
         expect(PaymentProviderConfigurationError).toBeDefined()
+        expect(PaymentProviderRequestError).toBeDefined()
+        expect(PaymentProviderResponseError).toBeDefined()
         expect(PaymentProviderValidationError).toBeDefined()
     })
 })
 
 describe('PaystackPaymentProvider.verifyPayment', () => {
-    function createJsonResponse (payload, overrides = {}) {
-        return {
-            ok: true,
-            status: 200,
-            json: jest.fn().mockResolvedValue(payload),
-            ...overrides,
-        }
-    }
-
     test('verifies a paystack transaction reference through the verification client and maps success to confirmed', async () => {
         const fetch = jest.fn().mockResolvedValue(createJsonResponse({
             status: true,
@@ -211,6 +341,17 @@ describe('PaystackPaymentProvider.verifyPayment', () => {
                 paymentMethod: 'card',
             },
             metadata: {
+                amountConvention: {
+                    internal: {
+                        amount: '100.00',
+                        unit: 'major',
+                    },
+                    provider: {
+                        amount: '10000',
+                        unit: 'subunit',
+                    },
+                    currencyCode: 'NGN',
+                },
                 verification: {
                     endpoint: '/transaction/verify/:reference',
                 },

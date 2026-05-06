@@ -15,6 +15,7 @@ const { HandleProviderWebhookIngressService } = require('./HandleProviderWebhook
 const { InitiateRentPaymentService } = require('./InitiateRentPaymentService')
 const { MultiPayment } = require('./MultiPayment')
 const { Payment } = require('./Payment')
+const { PaymentProviderCredential } = require('./PaymentProviderCredential')
 const { PaymentsFile } = require('./PaymentsFile')
 const { PaymentsFilterTemplate } = require('./PaymentsFilterTemplate')
 const { PaymentStatusChangeWebhookUrl } = require('./PaymentStatusChangeWebhookUrl')
@@ -39,6 +40,7 @@ module.exports = {
     HandleProviderWebhookIngressService,
     MultiPayment,
     Payment,
+    PaymentProviderCredential,
     PaymentStatusChangeWebhookUrl,
     InitiateRentPaymentService,
     RecordManualRentPaymentService,

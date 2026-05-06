@@ -35,6 +35,9 @@ const MultiPaymentAdmin = generateGqlQueries('MultiPayment', MULTI_PAYMENT_ADMIN
 const PAYMENT_FIELDS = `{ amount explicitFee explicitServiceCharge implicitFee currencyCode advancedAt depositedDate transferDate accountNumber purpose frozenReceipt receipt { id property { id address addressKey } account { unitName } } invoice { id organization { id name } status property { id address addressKey } number ticket { id number } } frozenInvoice multiPayment { id transactionId } context { id integration { id name } } status order ${COMMON_FIELDS} period organization { id } tenant { id } occupancy { id } property { id } rentalUnit { id } paymentMethod provider providerReference externalTransactionId confirmedAt reversalReason reversedAt reversedBy { id } reversalLedgerEntry { id } recipientBic recipientBankAccount rawAddress frozenDistribution frozenSplits posReceiptUrl }`
 const Payment = generateGqlQueries('Payment', PAYMENT_FIELDS)
 
+const PAYMENT_PROVIDER_CREDENTIAL_FIELDS = `{ organization { id } provider environment publicKey currency initiationEnabled verificationEnabled webhookEnabled isEnabled ${COMMON_FIELDS} }`
+const PaymentProviderCredential = generateGqlQueries('PaymentProviderCredential', PAYMENT_PROVIDER_CREDENTIAL_FIELDS)
+
 const REGISTER_MULTI_PAYMENT_MUTATION = gql`
     mutation registerMultiPayment ($data: RegisterMultiPaymentInput!) {
         result: registerMultiPayment(data: $data) { dv multiPaymentId webViewUrl feeCalculationUrl directPaymentUrl getCardTokensUrl }
@@ -60,6 +63,22 @@ const REGISTER_MULTI_PAYMENT_FOR_VIRTUAL_RECEIPT_MUTATION = gql`
 const GENERATE_PAYMENT_LINK_QUERY = gql`
     query generatePaymentLink ($data: GeneratePaymentLinkInput!) {
         result: generatePaymentLink(data: $data) { dv, paymentUrl }
+    }
+`
+
+const INITIATE_RENT_PAYMENT_MUTATION = gql`
+    mutation initiateRentPayment ($data: InitiateRentPaymentInput!) {
+        result: initiateRentPayment(data: $data) {
+            paymentId
+            provider
+            providerReference
+            amount
+            currency
+            status
+            authorizationUrl
+            paymentUrl
+            actionTaken
+        }
     }
 `
 
@@ -240,12 +259,14 @@ module.exports = {
     MultiPaymentWithPayerInfo,
     MultiPaymentAdmin,
     Payment,
+    PaymentProviderCredential,
     REGISTER_MULTI_PAYMENT_MUTATION,
     EXPORT_PAYMENTS_TO_EXCEL,
     PaymentsFilterTemplate,
     REGISTER_MULTI_PAYMENT_FOR_ONE_RECEIPT_MUTATION,
     REGISTER_MULTI_PAYMENT_FOR_VIRTUAL_RECEIPT_MUTATION,
     GENERATE_PAYMENT_LINK_QUERY,
+    INITIATE_RENT_PAYMENT_MUTATION,
     SUM_PAYMENTS_QUERY,
     RecurrentPaymentContext,
     RecurrentPayment,

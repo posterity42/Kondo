@@ -178,6 +178,31 @@ And then start it using:
 yarn workspace @app/condo worker
 ```
 
+### Paystack verification smoke
+
+For a verification-only Paystack smoke path that does not initiate a live payment and does not wire webhooks, use:
+
+```bash
+PAYSTACK_SECRET_KEY=sk_test_or_live \
+PAYSTACK_SMOKE_REFERENCE=existing_paystack_reference \
+yarn workspace @app/condo paystack:verify:smoke
+```
+
+Or pass the reference explicitly:
+
+```bash
+PAYSTACK_SECRET_KEY=sk_test_or_live \
+yarn workspace @app/condo paystack:verify:smoke -- existing_paystack_reference
+```
+
+Verification-only env vars:
+- `PAYSTACK_SECRET_KEY` - required
+- `PAYSTACK_SMOKE_REFERENCE` - required unless you pass the reference on the CLI
+- `PAYSTACK_API_URL` - optional Paystack API base URL override
+- `PAYSTACK_SMOKE_PAYMENT_METHOD` - optional label included in the normalized smoke output
+
+If the secret key or reference is absent, the command exits cleanly with a JSON `status` of `skipped`.
+
 ## Major version migration guide
 
 Check [migration.md](docs/migration.md)

@@ -24,6 +24,18 @@ Use: `yarn workspace @app/condo node ./bin/delete-meters-by-property-ids.js prop
 
 Use: `yarn workspace @app/condo node ./bin/fix-database-migration-state.js` command
 
+# Paystack verification smoke
+
+Use: `yarn workspace @app/condo paystack:verify:smoke -- <paystack_reference>`
+
+Verification-only env vars:
+- `PAYSTACK_SECRET_KEY` - required, used only for the `/transaction/verify/:reference` API call
+- `PAYSTACK_SMOKE_REFERENCE` - optional when `<paystack_reference>` is passed on the CLI, otherwise required
+- `PAYSTACK_API_URL` - optional override for the Paystack API base URL, defaults to `https://api.paystack.co`
+- `PAYSTACK_SMOKE_PAYMENT_METHOD` - optional label forwarded into the normalized smoke output
+
+When `PAYSTACK_SECRET_KEY` or a reference is absent, the smoke script exits successfully and prints a `status: "skipped"` payload instead of failing.
+
 # Changing Organization inn
 
 Use: `yarn workspace @app/condo node ./bin/change-organization-inn.js <org_id> <new_inn>` command

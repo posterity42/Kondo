@@ -34,6 +34,13 @@ const {
     getPaymentProvider,
     getPaymentProviderMetadata,
 } = require('@condo/domains/acquiring/utils/serverSchema/paymentProviders')
+const { resolvePaymentProviderOptions } = require('@condo/domains/acquiring/utils/serverSchema/paymentProviderCredentials')
+const {
+    PaymentProviderConfigurationError,
+    PaymentProviderRequestError,
+    PaymentProviderResponseError,
+    PaymentProviderValidationError,
+} = require('@condo/domains/acquiring/utils/serverSchema/paymentProviders/paymentProviderErrors')
 const {
     convertPaystackSubunitsToMajorAmount,
 } = require('@condo/domains/acquiring/utils/serverSchema/paymentProviders/PaystackVerificationClient')
@@ -112,6 +119,7 @@ const VERIFY_PENDING_PAYMENT_SENDER = {
     dv: 1,
     fingerprint: 'providerPaymentVerification',
 }
+const DEFAULT_PENDING_RENT_PAYMENT_RECOVERY_TTL_MINUTES = 30
 
 class RentPaymentInitiationError extends Error {
     constructor (code, message, details = {}) {
@@ -217,10 +225,10 @@ function assertRentPaymentInitiationContext (data = {}) {
 }
 
 function getPendingRentPaymentIntentProviderReference (data = {}, initialization = {}) {
-    const providerReference = data.providerReference ||
-        data.reference ||
-        initialization.providerReference ||
+    const providerReference = initialization.providerReference ||
         initialization.externalTransactionId ||
+        data.providerReference ||
+        data.reference ||
         null
 
     return providerReference ? String(providerReference).trim() : null
@@ -230,6 +238,66 @@ function normalizeNullableString (value) {
     if (value === null || value === undefined) return null
 
     return String(value)
+}
+
+function buildStoredProviderInitializationMetadata (initialization = {}) {
+    return {
+        provider: normalizeText(initialization.provider),
+        providerStatus: normalizeText(initialization.providerStatus),
+        providerReference: normalizeText(initialization.providerReference || initialization.externalTransactionId),
+        providerEnvironment: normalizeText(initialization.providerEnvironment),
+        externalTransactionId: normalizeText(initialization.externalTransactionId),
+        authorizationUrl: normalizeText(initialization.authorizationUrl),
+        paymentUrl: normalizeText(initialization.paymentUrl),
+        metadata: initialization.metadata && typeof initialization.metadata === 'object'
+            ? initialization.metadata
+            : null,
+    }
+}
+
+function buildRecoveredRentPaymentReference (providerReference) {
+    return `${String(providerReference).trim()}-retry-${Date.now()}`
+}
+
+async function initializeRentPaymentWithProvider (provider, providerCode, data, overrides = {}) {
+    try {
+        return await provider.initializePayment({
+            ...data,
+            ...overrides,
+            providerCode,
+            currency: overrides.currency || data.currency || data.currencyCode,
+            payer: overrides.payer || data.payerContact || data.payer,
+            payment: overrides.payment || data.paymentContext,
+            context: overrides.context || data.rentContext || data.paymentContext,
+        })
+    } catch (error) {
+        if (error instanceof PaymentProviderConfigurationError) {
+            throw new RentPaymentInitiationError(
+                'RENT_PAYMENT_INITIATION_PROVIDER_NOT_CONFIGURED',
+                `Provider "${providerCode}" is not configured for online rent payment initiation`,
+                { provider: providerCode }
+            )
+        }
+        if (error instanceof PaymentProviderValidationError) {
+            throw new RentPaymentInitiationError(
+                'RENT_PAYMENT_INITIATION_PROVIDER_INVALID_REQUEST',
+                `Provider "${providerCode}" rejected the payment initiation request`,
+                {
+                    provider: providerCode,
+                    field: error.field,
+                }
+            )
+        }
+        if (error instanceof PaymentProviderRequestError || error instanceof PaymentProviderResponseError) {
+            throw new RentPaymentInitiationError(
+                'RENT_PAYMENT_INITIATION_PROVIDER_REQUEST_FAILED',
+                `Provider "${providerCode}" failed to initialize online rent payment`,
+                { provider: providerCode }
+            )
+        }
+
+        throw error
+    }
 }
 
 function getPublicRentPaymentActionTaken (result = {}, fallbackActionTaken = null) {
@@ -277,11 +345,13 @@ function extractPublicRentPaymentLinks (...candidates) {
 
 function buildPublicRentPaymentResponse (result = {}, options = {}) {
     const payment = result.payment || options.payment || null
-    const actionTaken = getPublicRentPaymentActionTaken(result, options.actionTaken || null)
+    const actionTaken = getPublicRentPaymentActionTaken(result, options.actionTaken || result.actionTaken || null)
     const { authorizationUrl, paymentUrl } = extractPublicRentPaymentLinks(
+        ...((options.linkCandidates || []).filter(Boolean)),
         result.initiation,
         result.verification,
-        result.confirmation
+        result.confirmation,
+        options.linkCandidate
     )
 
     return {
@@ -307,7 +377,15 @@ function buildPublicRentPaymentResponse (result = {}, options = {}) {
             result.currencyCode ||
             null
         ),
-        status: normalizeText((payment && payment.status) || null),
+        status: normalizeText(
+            (payment && payment.status) ||
+            result.status ||
+            result.internalStatus ||
+            result.confirmation && result.confirmation.internalStatus ||
+            result.verification && result.verification.internalStatus ||
+            result.initiation && PAYMENT_PROCESSING_STATUS ||
+            null
+        ),
         authorizationUrl,
         paymentUrl,
         actionTaken,
@@ -322,7 +400,8 @@ function matchesPendingRentPaymentIntent (payment, data, providerReference) {
     const dataTenantId = getRelationId(data.tenant)
     const dataOccupancyId = getRelationId(data.occupancy)
 
-    return String(payment.amount) === String(data.amount)
+    return String(payment.status) === String(PAYMENT_PROCESSING_STATUS)
+        && String(payment.amount) === String(data.amount)
         && String(payment.currencyCode) === String(data.currency || data.currencyCode)
         && String(payment.provider) === String(data.providerCode)
         && String(payment.providerReference || '') === String(providerReference || '')
@@ -347,6 +426,115 @@ function isUniqueConstraintViolationForPaymentProviderReference (error) {
 
     return message.includes('duplicate key value violates unique constraint')
         && message.includes('payment_unique_provider_reference_per_scope')
+}
+
+function getStoredProviderInitializationLinks (payment) {
+    const providerInitResponse = get(payment, 'providerInitResponse')
+
+    if (!providerInitResponse || typeof providerInitResponse !== 'object') return null
+
+    return {
+        authorizationUrl: normalizeText(providerInitResponse.authorizationUrl),
+        paymentUrl: normalizeText(providerInitResponse.paymentUrl),
+    }
+}
+
+function hasPublicRentPaymentLink (candidate) {
+    return Boolean(normalizeText(get(candidate, 'authorizationUrl')) || normalizeText(get(candidate, 'paymentUrl')))
+}
+
+function getPendingRentPaymentRecoveryTtlMinutes () {
+    const configuredValue = Number(process.env.RENT_PAYMENT_PENDING_RECOVERY_TTL_MINUTES)
+
+    if (Number.isFinite(configuredValue) && configuredValue > 0) {
+        return configuredValue
+    }
+
+    return DEFAULT_PENDING_RENT_PAYMENT_RECOVERY_TTL_MINUTES
+}
+
+function isStalePendingRentPayment (payment, now = dayjs()) {
+    if (!payment || payment.status !== PAYMENT_PROCESSING_STATUS) return false
+
+    const referenceTimestamp = normalizeText(payment.updatedAt || payment.createdAt || null)
+
+    if (!referenceTimestamp) return false
+
+    const referenceTime = dayjs(referenceTimestamp)
+    if (!referenceTime.isValid()) return false
+
+    return now.diff(referenceTime, 'minute', true) >= getPendingRentPaymentRecoveryTtlMinutes()
+}
+
+async function resolveExistingPendingRentPayment (context, {
+    payment,
+    data,
+    providerCode,
+    providerMetadata,
+}) {
+    const storedLinks = getStoredProviderInitializationLinks(payment)
+    const hasStoredLink = hasPublicRentPaymentLink(storedLinks)
+    const stale = isStalePendingRentPayment(payment)
+
+    if (!stale && hasStoredLink) {
+        return {
+            payment,
+            idempotent: true,
+            actionTaken: 'duplicate_noop',
+            linkCandidate: storedLinks,
+        }
+    }
+
+    if (providerMetadata.capabilities.isManual || !providerMetadata.capabilities.canVerifyPayment) {
+        return {
+            payment,
+            idempotent: true,
+            actionTaken: 'duplicate_noop',
+            linkCandidate: hasStoredLink ? storedLinks : null,
+        }
+    }
+
+    const verificationResult = await verifyPendingPayment(context, {
+        dv: data.dv,
+        sender: data.sender,
+        providerCode,
+        paymentId: payment.id,
+        organization: data.organization,
+        paymentMethod: data.paymentMethod || payment.paymentMethod || null,
+    })
+
+    if (verificationResult.outcome === 'confirmed') {
+        return {
+            payment: verificationResult.payment,
+            idempotent: verificationResult.idempotent,
+            actionTaken: 'confirmed',
+            verification: verificationResult.verification,
+            confirmation: verificationResult.confirmation,
+            linkCandidate: null,
+            verificationResolved: true,
+        }
+    }
+
+    if (verificationResult.outcome === 'failed') {
+        return {
+            payment: verificationResult.payment,
+            idempotent: false,
+            actionTaken: 'recovered_retry',
+            verification: verificationResult.verification,
+            linkCandidate: null,
+            recoveryRequired: true,
+            verificationResolved: true,
+        }
+    }
+
+    return {
+        payment: verificationResult.payment,
+        idempotent: true,
+        actionTaken: 'pending_noop',
+        verification: verificationResult.verification,
+        linkCandidate: stale ? null : storedLinks,
+        verificationResolved: true,
+    }
 }
 
 async function getConfirmedRentPaymentResult (context, paymentId) {
@@ -548,11 +736,6 @@ async function verifyPendingPayment (context, data, options = {}) {
         getRelationId(data.context && data.context.organization) ||
         null
     )
-    const providerOptions = {
-        ...(options.providerOptions || {}),
-        ...(options.fetch ? { fetch: options.fetch } : {}),
-    }
-
     if (!providerCode) {
         throw new VerifyPendingPaymentError(
             'PAYMENT_VERIFICATION_PROVIDER_REQUIRED',
@@ -567,20 +750,12 @@ async function verifyPendingPayment (context, data, options = {}) {
         )
     }
 
-    const providerMetadata = getPaymentProviderMetadata(providerCode, providerOptions)
+    const providerMetadata = getPaymentProviderMetadata(providerCode)
 
     if (providerMetadata.capabilities.isManual) {
         throw new VerifyPendingPaymentError(
             'PAYMENT_VERIFICATION_PROVIDER_NOT_SUPPORTED',
             `Provider "${providerCode}" does not support pending payment verification`,
-            { provider: providerCode }
-        )
-    }
-
-    if (!providerMetadata.configured) {
-        throw new VerifyPendingPaymentError(
-            'PAYMENT_VERIFICATION_PROVIDER_NOT_CONFIGURED',
-            `Provider "${providerCode}" is not configured for pending payment verification`,
             { provider: providerCode }
         )
     }
@@ -625,6 +800,26 @@ async function verifyPendingPayment (context, data, options = {}) {
         )
     }
 
+    const resolvedProviderConfiguration = await resolvePaymentProviderOptions(providerCode, {
+        ...data,
+        organizationId: organizationId || payment.organization,
+        organization: data.organization || payment.organization || null,
+        payment,
+        providerEnvironment: payment.providerEnvironment || null,
+    }, options)
+    const resolvedProviderMetadata = getPaymentProviderMetadata(
+        providerCode,
+        resolvedProviderConfiguration.providerOptions
+    )
+
+    if (!resolvedProviderMetadata.configured) {
+        throw new VerifyPendingPaymentError(
+            'PAYMENT_VERIFICATION_PROVIDER_NOT_CONFIGURED',
+            `Provider "${providerCode}" is not configured for pending payment verification`,
+            { provider: providerCode }
+        )
+    }
+
     const verificationReference = providerReference ||
         normalizeText(payment.providerReference) ||
         normalizeText(payment.externalTransactionId)
@@ -636,11 +831,12 @@ async function verifyPendingPayment (context, data, options = {}) {
         )
     }
 
-    const provider = getPaymentProvider(providerCode, providerOptions)
+    const provider = getPaymentProvider(providerCode, resolvedProviderConfiguration.providerOptions)
     const verification = await provider.verifyPayment({
         ...data,
         providerCode,
         providerReference: verificationReference,
+        providerEnvironment: payment.providerEnvironment || resolvedProviderConfiguration.providerEnvironment,
         payment,
         context: data.context || payment.context || null,
         organization: data.organization || payment.organization || null,
@@ -796,7 +992,7 @@ function isTestOrSandboxWebhookMode (data = {}, payload = null, metadata = {}) {
         return true
     }
 
-    return process.env.NODE_ENV === 'test'
+    return false
 }
 
 function shouldRejectUnverifiedWebhook ({
@@ -927,14 +1123,6 @@ async function handleProviderWebhook (context, data) {
 
     const providerMetadata = getPaymentProviderMetadata(providerCode)
 
-    if (!providerMetadata.configured) {
-        throw new ProviderWebhookHandlingError(
-            'PAYMENT_WEBHOOK_PROVIDER_NOT_CONFIGURED',
-            `Provider "${providerCode}" is not configured for webhook ingestion`,
-            { provider: providerCode }
-        )
-    }
-
     if (!providerMetadata.capabilities.canHandleWebhook) {
         throw new ProviderWebhookHandlingError(
             'PAYMENT_WEBHOOK_PROVIDER_NOT_SUPPORTED',
@@ -944,13 +1132,79 @@ async function handleProviderWebhook (context, data) {
     }
 
     const provider = getPaymentProvider(providerCode)
-    const signatureVerification = await provider.verifyWebhookSignature(payload, metadata)
-    const webhookResult = await provider.handleWebhook(payload, {
+    const providerReference = normalizeText(provider.mapProviderReference(payload))
+    const lookupExternalTransactionId = providerReference
+    const payment = await findPaymentForConfirmation({
+        provider: providerCode,
+        providerReference,
+        externalTransactionId: lookupExternalTransactionId,
+    })
+
+    if (payment === false) {
+        throw new ProviderWebhookHandlingError(
+            'PAYMENT_WEBHOOK_LOOKUP_AMBIGUOUS',
+            'Provider webhook payment lookup is ambiguous',
+            {
+                provider: providerCode,
+                providerReference,
+                externalTransactionId: lookupExternalTransactionId,
+            }
+        )
+    }
+
+    if (!payment) {
+        return {
+            provider: providerCode,
+            acknowledged: true,
+            processed: false,
+            noop: true,
+            idempotent: false,
+            code: 'PAYMENT_WEBHOOK_PAYMENT_NOT_FOUND',
+            outcome: 'not_found',
+            internalStatus: null,
+            providerReference,
+            externalTransactionId: providerReference,
+            metadata: buildWebhookHandlingMetadata({
+                providerCode,
+                webhookResult: {},
+                internalStatus: null,
+                actionTaken: 'rejected',
+            }),
+            payment: null,
+            webhook: null,
+        }
+    }
+
+    const resolvedProviderConfiguration = await resolvePaymentProviderOptions(providerCode, {
+        ...data,
+        organizationId: payment.organization,
+        organization: payment.organization,
+        payment,
+        providerEnvironment: payment.providerEnvironment || null,
+    })
+    const resolvedProviderMetadata = getPaymentProviderMetadata(
+        providerCode,
+        resolvedProviderConfiguration.providerOptions
+    )
+
+    if (!resolvedProviderMetadata.configured) {
+        throw new ProviderWebhookHandlingError(
+            'PAYMENT_WEBHOOK_PROVIDER_NOT_CONFIGURED',
+            `Provider "${providerCode}" is not configured for webhook ingestion`,
+            { provider: providerCode }
+        )
+    }
+
+    const configuredProvider = getPaymentProvider(
+        providerCode,
+        resolvedProviderConfiguration.providerOptions
+    )
+    const signatureVerification = await configuredProvider.verifyWebhookSignature(payload, metadata)
+    const webhookResult = await configuredProvider.handleWebhook(payload, {
         ...metadata,
         signatureVerification,
     })
     const internalStatus = getWebhookInternalStatus(webhookResult)
-    const providerReference = normalizeText(provider.mapProviderReference(payload))
     const externalTransactionId = normalizeText(webhookResult.externalTransactionId) || providerReference
 
     if (shouldRejectUnverifiedWebhook({ data, payload, metadata, webhookResult })) {
@@ -974,37 +1228,6 @@ async function handleProviderWebhook (context, data) {
             payment: null,
             webhook: webhookResult,
         }
-    }
-
-    const payment = await findPaymentForConfirmation({
-        provider: providerCode,
-        providerReference,
-        externalTransactionId,
-    })
-
-    if (payment === false) {
-        throw new ProviderWebhookHandlingError(
-            'PAYMENT_WEBHOOK_LOOKUP_AMBIGUOUS',
-            'Provider webhook payment lookup is ambiguous',
-            {
-                provider: providerCode,
-                providerReference,
-                externalTransactionId,
-            }
-        )
-    }
-
-    if (!payment) {
-        return buildWebhookNoopResult({
-            providerCode,
-            webhookResult,
-            internalStatus,
-            providerReference,
-            externalTransactionId,
-            code: 'PAYMENT_WEBHOOK_PAYMENT_NOT_FOUND',
-            outcome: 'not_found',
-            actionTaken: 'rejected',
-        })
     }
 
     const originalPaymentStatus = payment.status
@@ -1175,7 +1398,11 @@ async function initiateRentPayment (context, data) {
     assertRentPaymentInitiationContext(data)
 
     const providerCode = String(data.providerCode).trim()
-    const providerMetadata = getPaymentProviderMetadata(providerCode)
+    const resolvedProviderConfiguration = await resolvePaymentProviderOptions(providerCode, data)
+    const providerMetadata = getPaymentProviderMetadata(
+        providerCode,
+        resolvedProviderConfiguration.providerOptions
+    )
 
     if (providerMetadata.capabilities.isManual) {
         throw new RentPaymentInitiationError(
@@ -1185,30 +1412,34 @@ async function initiateRentPayment (context, data) {
         )
     }
 
-    if (!providerMetadata.configured) {
+    const provider = getPaymentProvider(providerCode, resolvedProviderConfiguration.providerOptions)
+
+    if (typeof provider.isInitializationConfigured === 'function' && !provider.isInitializationConfigured()) {
         throw new RentPaymentInitiationError(
             'RENT_PAYMENT_INITIATION_PROVIDER_NOT_CONFIGURED',
             `Provider "${providerCode}" is not configured for online rent payment initiation`,
             { provider: providerCode }
         )
     }
-
-    const provider = getPaymentProvider(providerCode)
-    const initialization = await provider.initializePayment({
+    let initialization = await initializeRentPaymentWithProvider(provider, providerCode, {
         ...data,
-        providerCode,
-        currency: data.currency || data.currencyCode,
-        payer: data.payerContact || data.payer,
-        payment: data.paymentContext,
-        context: data.rentContext || data.paymentContext,
+        providerEnvironment: resolvedProviderConfiguration.providerEnvironment,
     })
-    const providerReference = getPendingRentPaymentIntentProviderReference(data, initialization)
-    const externalTransactionId = initialization.externalTransactionId || null
+    initialization = {
+        ...initialization,
+        providerEnvironment: resolvedProviderConfiguration.providerEnvironment,
+    }
+    let providerReference = getPendingRentPaymentIntentProviderReference(data, initialization)
+    let externalTransactionId = initialization.externalTransactionId || null
     const organizationId = data.organization.id
-    const duplicateReference = providerReference || externalTransactionId
+    let duplicateReference = providerReference || externalTransactionId
 
     let payment = null
     let idempotent = false
+    let actionTaken = null
+    let verification = null
+    let confirmation = null
+    let linkCandidate = initialization
 
     if (duplicateReference) {
         const [existingByProviderReference] = await find('Payment', {
@@ -1238,17 +1469,48 @@ async function initiateRentPayment (context, data) {
                 )
             }
 
-            payment = existingPayment
-            idempotent = true
+            const resolution = await resolveExistingPendingRentPayment(context, {
+                payment: existingPayment,
+                data,
+                providerCode,
+                providerMetadata,
+            })
+
+            actionTaken = resolution.actionTaken || actionTaken
+            verification = resolution.verification || verification
+            confirmation = resolution.confirmation || confirmation
+            linkCandidate = resolution.linkCandidate || null
+
+            if (!resolution.recoveryRequired) {
+                payment = resolution.payment
+                idempotent = resolution.idempotent
+            } else if (duplicateReference) {
+                const recoveredReference = buildRecoveredRentPaymentReference(duplicateReference)
+
+                initialization = await initializeRentPaymentWithProvider(provider, providerCode, data, {
+                    reference: recoveredReference,
+                    providerEnvironment: resolvedProviderConfiguration.providerEnvironment,
+                })
+                initialization = {
+                    ...initialization,
+                    providerEnvironment: resolvedProviderConfiguration.providerEnvironment,
+                }
+                providerReference = getPendingRentPaymentIntentProviderReference({ ...data, reference: recoveredReference }, initialization)
+                externalTransactionId = initialization.externalTransactionId || null
+                duplicateReference = providerReference || externalTransactionId
+                linkCandidate = initialization
+            }
         }
     }
 
     if (!payment) {
+        const paymentPeriod = dayjs().startOf('month').format('YYYY-MM-DD')
         const createPayload = {
             dv: data.dv,
             sender: data.sender,
             amount: data.amount,
             currencyCode: data.currency || data.currencyCode,
+            period: paymentPeriod,
             organization: { connect: { id: organizationId } },
             ...(data.tenant && data.tenant.id ? { tenant: { connect: { id: data.tenant.id } } } : {}),
             ...(data.occupancy && data.occupancy.id ? { occupancy: { connect: { id: data.occupancy.id } } } : {}),
@@ -1257,12 +1519,13 @@ async function initiateRentPayment (context, data) {
             paymentMethod: data.paymentMethod || null,
             provider: providerCode,
             providerReference,
+            providerEnvironment: resolvedProviderConfiguration.providerEnvironment,
             externalTransactionId,
             purpose: data.purpose || 'Online rent payment initiation',
             recipientBic: 'PENDING',
             recipientBankAccount: 'PENDING',
             status: PAYMENT_PROCESSING_STATUS,
-            providerInitResponse: initialization,
+            providerInitResponse: buildStoredProviderInitializationMetadata(initialization),
         }
 
         try {
@@ -1296,12 +1559,15 @@ async function initiateRentPayment (context, data) {
 
             payment = existingPayment
             idempotent = true
+            actionTaken = 'duplicate_noop'
+            linkCandidate = getStoredProviderInitializationLinks(existingPayment)
         }
     }
 
     return {
         payment,
         idempotent,
+        actionTaken,
         organization: data.organization,
         tenant: data.tenant || null,
         occupancy: data.occupancy || null,
@@ -1311,13 +1577,23 @@ async function initiateRentPayment (context, data) {
         payer: data.payerContact || data.payer,
         rentContext: data.rentContext || null,
         paymentContext: data.paymentContext || null,
-        initiation: initialization,
+        initiation: idempotent || ['confirmed', 'pending_noop'].includes(actionTaken)
+            ? null
+            : initialization,
+        verification,
+        confirmation,
+        linkCandidate,
         providerReference,
     }
 }
 
 async function initiateRentPaymentPublic (context, data) {
-    return buildPublicRentPaymentResponse(await initiateRentPayment(context, data))
+    const result = await initiateRentPayment(context, data)
+
+    return buildPublicRentPaymentResponse(result, {
+        actionTaken: result.actionTaken || (result.idempotent ? 'duplicate_noop' : null),
+        linkCandidate: result.linkCandidate || null,
+    })
 }
 
 async function verifyPendingPaymentPublic (context, data, options = {}) {

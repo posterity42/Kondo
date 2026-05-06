@@ -57,20 +57,21 @@ const FieldPairRow: React.FC<FieldPairRowProps> = (props) => (
     />
 )
 
-export const ContactPageContent = ({ contact, isContactEditable, softDeleteAction, organizationPhonePrefix = null }: {
+export const ContactPageContent = ({ contact, isContactEditable, softDeleteAction, organizationPhonePrefix = null, organizationId = null }: {
     contact: GetContactByIdQuery['contacts'][0]
     isContactEditable: boolean
     softDeleteAction: () => Promise<void>
     organizationPhonePrefix?: Organization['phoneNumberPrefix']
+    organizationId?: string | null
 }) => {
     const intl = useIntl()
-    
+
     const { customValues } = useCustomValues({
         modelName: CustomFieldModelNameType.Contact,
         objectId: contact?.id || '',
         skip: !contact?.id,
     })
-    
+
     const PhoneLabel = intl.formatMessage({ id: 'Phone' })
     const AddressLabel = intl.formatMessage({ id: 'field.Address' })
     const EmailLabel = intl.formatMessage({ id: 'field.EMail' })
@@ -187,7 +188,7 @@ export const ContactPageContent = ({ contact, isContactEditable, softDeleteActio
                                                         key={customValue.id}
                                                         fieldTitle={customValue.customField?.name || ''}
                                                         fieldValue={
-                                                            customValue.customField?.type === 'Json' 
+                                                            customValue.customField?.type === 'Json'
                                                                 ? JSON.stringify(customValue.data)
                                                                 : String(customValue.data || '')
                                                         }
@@ -198,8 +199,15 @@ export const ContactPageContent = ({ contact, isContactEditable, softDeleteActio
                                     )}
                                 </Row>
                             </FrontLayerContainer>
-                            <ResidentRentalDashboard residentId={residentId} />
-                            
+                            <ResidentRentalDashboard
+                                residentId={residentId}
+                                organizationId={organizationId}
+                                payerContact={{
+                                    email: contactEmail || undefined,
+                                    phone: contactPhone || undefined,
+                                }}
+                            />
+
                             {isContactEditable && breakpoints.DESKTOP_SMALL && (
                                 <Col span={16}>
                                     <ActionBar
@@ -268,7 +276,7 @@ const ContactInfoPage: PageComponentType = () => {
 
     const { push, query } = useRouter()
     const { id: contactId } = query as { id: string }
-    const { role } = useOrganization()
+    const { role, organization } = useOrganization()
     const { persistor } = useCachePersistor()
 
     const {
@@ -313,6 +321,7 @@ const ContactInfoPage: PageComponentType = () => {
             contact={contact}
             isContactEditable={isContactEditable}
             softDeleteAction={handleDeleteAction}
+            organizationId={organization?.id}
         />
     )
 }

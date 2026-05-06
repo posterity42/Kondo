@@ -3,12 +3,14 @@
  */
 
 const crypto = require('crypto')
+const { EncryptionManager } = require('@open-condo/keystone/crypto/EncryptionManager')
 
 const stores = {}
 const counters = {}
+const encryptionManager = new EncryptionManager()
 
 function resetStores () {
-    for (const listKey of ['Organization', 'Payment', 'TenantLedger', 'LedgerEntry', 'PaymentAllocation', 'PaymentReceipt', 'RentCharge']) {
+    for (const listKey of ['Organization', 'Payment', 'PaymentProviderCredential', 'TenantLedger', 'LedgerEntry', 'PaymentAllocation', 'PaymentReceipt', 'RentCharge']) {
         stores[listKey] = []
         counters[listKey] = 0
     }
@@ -106,6 +108,7 @@ function addPendingPayment (attrs = {}) {
         currencyCode: 'GHS',
         provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
         providerReference: 'paystack-ref-1',
+        providerEnvironment: 'test',
         externalTransactionId: 'paystack-ref-1',
         status: PAYMENT_PROCESSING_STATUS,
         confirmedAt: null,
@@ -116,6 +119,27 @@ function addPendingPayment (attrs = {}) {
 
     stores.Payment.push(payment)
     return payment
+}
+
+function addPaymentProviderCredential (attrs = {}) {
+    const credential = {
+        id: `credential-${stores.PaymentProviderCredential.length + 1}`,
+        organization: 'organization-1',
+        provider: 'paystack',
+        environment: 'test',
+        secretKey: encryptionManager.encrypt('sk_test_paystack_webhook'),
+        webhookSecret: encryptionManager.encrypt('whsec_test_paystack_webhook'),
+        currency: 'GHS',
+        initiationEnabled: true,
+        verificationEnabled: true,
+        webhookEnabled: true,
+        isEnabled: true,
+        deletedAt: null,
+        ...attrs,
+    }
+
+    stores.PaymentProviderCredential.push(credential)
+    return credential
 }
 
 function addRentCharge (attrs = {}) {
@@ -142,18 +166,21 @@ function addRentCharge (attrs = {}) {
 
 describe('handleProviderWebhook', () => {
     const originalPaystackSecret = process.env.PAYSTACK_SECRET_KEY
+    const originalPaystackAllowFallback = process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK
     const originalHubtelSecret = process.env.HUBTEL_SECRET_KEY
 
     beforeEach(() => {
         resetStores()
         jest.clearAllMocks()
         process.env.PAYSTACK_SECRET_KEY = 'sk_test_paystack'
+        process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK = 'true'
         process.env.HUBTEL_SECRET_KEY = 'hubtel_test_secret'
         stores.Organization.push({ id: 'organization-1', receiptCode: 'KONDO', deletedAt: null })
     })
 
     afterAll(() => {
         process.env.PAYSTACK_SECRET_KEY = originalPaystackSecret
+        process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK = originalPaystackAllowFallback
         process.env.HUBTEL_SECRET_KEY = originalHubtelSecret
     })
 
@@ -171,6 +198,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -199,6 +227,52 @@ describe('handleProviderWebhook', () => {
         expect(stores.LedgerEntry).toHaveLength(1)
     })
 
+    test('verifies Paystack webhook signatures using the payment organization credential', async () => {
+        addRentCharge({ amount: '150' })
+        addPendingPayment({
+            providerReference: 'paystack-org-credential-ref-1',
+            externalTransactionId: 'paystack-org-credential-ref-1',
+        })
+        addPaymentProviderCredential({
+            organization: 'organization-1',
+            secretKey: encryptionManager.encrypt('sk_test_org_1_webhook'),
+            webhookSecret: encryptionManager.encrypt('whsec_org_1_webhook'),
+        })
+        addPaymentProviderCredential({
+            organization: 'organization-2',
+            secretKey: encryptionManager.encrypt('sk_test_org_2_webhook'),
+            webhookSecret: encryptionManager.encrypt('whsec_org_2_webhook'),
+        })
+        const payload = {
+            event: 'charge.success',
+            data: {
+                status: 'success',
+                reference: 'paystack-org-credential-ref-1',
+            },
+        }
+        const rawBody = Buffer.from(JSON.stringify(payload))
+        const signature = crypto
+            .createHmac('sha512', 'whsec_org_1_webhook')
+            .update(rawBody)
+            .digest('hex')
+
+        const result = await handleProviderWebhook({}, {
+            providerCode: RENT_PAYMENT_PROVIDER_PAYSTACK,
+            payload,
+            metadata: {
+                headers: {
+                    'x-paystack-signature': signature,
+                },
+                rawBody,
+            },
+            environment: 'test',
+        })
+
+        expect(result.outcome).toBe('confirmed')
+        expect(result.metadata.signatureVerified).toBe(true)
+        expect(result.metadata.signatureVerificationReason).toBe('Paystack signature verified successfully')
+    })
+
     test('confirms an existing pending Hubtel payment on success webhook', async () => {
         addRentCharge({ amount: '150' })
         const payment = addPendingPayment({
@@ -215,6 +289,7 @@ describe('handleProviderWebhook', () => {
                     clientReference: 'hubtel-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result.payment).toMatchObject({
@@ -236,6 +311,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -273,6 +349,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -309,6 +386,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'missing-ref',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toEqual(expect.objectContaining({
@@ -316,16 +394,16 @@ describe('handleProviderWebhook', () => {
             noop: true,
             code: 'PAYMENT_WEBHOOK_PAYMENT_NOT_FOUND',
             outcome: 'not_found',
-            internalStatus: 'confirmed',
+            internalStatus: null,
             payment: null,
             metadata: {
                 provider: RENT_PAYMENT_PROVIDER_PAYSTACK,
-                providerStatus: 'success',
-                internalStatus: 'confirmed',
+                providerStatus: null,
+                internalStatus: null,
                 actionTaken: 'rejected',
                 signatureVerified: false,
-                signatureVerificationRequired: true,
-                signatureVerificationReason: 'Paystack signature header is missing',
+                signatureVerificationRequired: false,
+                signatureVerificationReason: null,
             },
         }))
         expect(stores.Payment).toHaveLength(0)
@@ -345,6 +423,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
         const secondResult = await handleProviderWebhook({}, {
             providerCode: RENT_PAYMENT_PROVIDER_PAYSTACK,
@@ -355,6 +434,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(firstResult.idempotent).toBe(false)
@@ -397,6 +477,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -436,6 +517,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -474,6 +556,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'paystack-ref-1',
                 },
             },
+            environment: 'test',
         })
 
         expect(result).toMatchObject({
@@ -518,6 +601,7 @@ describe('handleProviderWebhook', () => {
                             currency: 'USD',
                         },
                     },
+                    environment: 'test',
                 })
             } catch (error) {
                 expect(error.message).toBe('Confirmed amount does not match pending payment amount')
@@ -738,6 +822,7 @@ describe('handleProviderWebhook', () => {
                     reference: 'ambiguous-ref',
                 },
             },
+            environment: 'test',
         })).rejects.toMatchObject({
             name: 'ProviderWebhookHandlingError',
             code: 'PAYMENT_WEBHOOK_LOOKUP_AMBIGUOUS',
@@ -752,11 +837,17 @@ describe('handleProviderWebhook', () => {
     })
 
     test('rejects unconfigured providers', async () => {
+        addPendingPayment()
         delete process.env.PAYSTACK_SECRET_KEY
+        process.env.PAYSTACK_ALLOW_GLOBAL_CREDENTIAL_FALLBACK = 'false'
 
         await expect(handleProviderWebhook({}, {
             providerCode: RENT_PAYMENT_PROVIDER_PAYSTACK,
-            payload: {},
+            payload: {
+                data: {
+                    reference: 'paystack-ref-1',
+                },
+            },
         })).rejects.toMatchObject({
             name: 'ProviderWebhookHandlingError',
             code: 'PAYMENT_WEBHOOK_PROVIDER_NOT_CONFIGURED',
