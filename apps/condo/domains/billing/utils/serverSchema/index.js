@@ -53,6 +53,7 @@ const {
     getBillingMonthsToGenerate,
     getDueDate,
 } = require('./rentChargeGeneration')
+const { getTenantStatement } = require('./tenantStatement')
 
 const BillingIntegration = generateServerUtils('BillingIntegration')
 const BillingIntegrationAccessRight = generateServerUtils('BillingIntegrationAccessRight')
@@ -272,6 +273,7 @@ module.exports = {
     createGroupedAnnualInvoice,
     generateRentCharges,
     generateRentChargesForOccupancy,
+    getTenantStatement,
     getBillingMonthsToGenerate,
     getDueDate,
 /* AUTOGENERATE MARKER <EXPORTS> */

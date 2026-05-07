@@ -167,7 +167,7 @@ const CANCEL_OCCUPANCY_MUTATION = gql`
 type RentalsPageContentProps = {
     property: {
         id: string
-        address: string
+        address?: string
         organization?: { id: string }
     }
     organizationId: string

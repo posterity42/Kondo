@@ -1,0 +1,129 @@
+import { useQuery } from '@apollo/client'
+import { Card, DatePicker, Input, Select, Table } from 'antd'
+import dayjs from 'dayjs'
+import { gql } from 'graphql-tag'
+import get from 'lodash/get'
+import React, { useMemo, useState } from 'react'
+
+import { useIntl } from '@open-condo/next/intl'
+import { useOrganization } from '@open-condo/next/organization'
+import { Space, Typography } from '@open-condo/ui'
+
+import { PageHeader, PageWrapper } from '@condo/domains/common/components/containers/BaseLayout'
+import { TablePageContent } from '@condo/domains/common/components/containers/BaseLayout/BaseLayout'
+import { PageComponentType } from '@condo/domains/common/types'
+import { renderLink } from '@condo/domains/common/utils/Renders'
+import { OrganizationRequired } from '@condo/domains/organization/components/OrganizationRequired'
+import { DEFAULT_PAGE_SIZE, formatDate, formatMoney, getTenantName, isDateInRange, matchesSearch, PageError } from '@condo/domains/property/components/RentalAdmin/utils'
+
+const GET_RECEIPTS = gql`
+    query getReceiptsPage ($organizationId: ID!) {
+        receipts: allPaymentReceipts(
+            where: { organization: { id: $organizationId }, deletedAt: null }
+            sortBy: [issuedAt_DESC]
+            first: ${DEFAULT_PAGE_SIZE}
+        ) {
+            id
+            number
+            amount
+            currencyCode
+            issuedAt
+            paymentMethod
+            provider
+            reference
+            balanceAfterPayment
+            tenant { id user { id name phone } }
+            payment { id }
+        }
+    }
+`
+
+const ReceiptsPage: PageComponentType = () => {
+    const intl = useIntl()
+    const { organization } = useOrganization()
+    const organizationId = get(organization, 'id')
+    const [search, setSearch] = useState('')
+    const [tenantFilter, setTenantFilter] = useState<string | undefined>()
+    const [methodFilter, setMethodFilter] = useState<string | undefined>()
+    const [providerFilter, setProviderFilter] = useState<string | undefined>()
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null)
+    const { data, loading, error } = useQuery(GET_RECEIPTS, {
+        variables: { organizationId },
+        skip: !organizationId,
+    })
+
+    const receipts = get(data, 'receipts', [])
+    const tenantOptions = useMemo(() => Array.from(new Map(
+        receipts
+            .filter(receipt => get(receipt, ['tenant', 'id']))
+            .map(receipt => [get(receipt, ['tenant', 'id']), {
+                label: getTenantName(get(receipt, 'tenant')),
+                value: get(receipt, ['tenant', 'id']),
+            }])
+    ).values()), [receipts])
+
+    const filteredReceipts = useMemo(() => {
+        const [startDate, endDate] = dateRange || []
+
+        return receipts.filter(receipt => {
+            if (tenantFilter && get(receipt, ['tenant', 'id']) !== tenantFilter) return false
+            if (methodFilter && get(receipt, 'paymentMethod') !== methodFilter) return false
+            if (providerFilter && get(receipt, 'provider') !== providerFilter) return false
+            if (!isDateInRange(get(receipt, 'issuedAt'), startDate, endDate)) return false
+
+            return matchesSearch(search, [
+                get(receipt, 'number'),
+                getTenantName(get(receipt, 'tenant')),
+                get(receipt, 'reference'),
+                get(receipt, 'paymentMethod'),
+                get(receipt, 'provider'),
+            ])
+        })
+    }, [dateRange, methodFilter, providerFilter, receipts, search, tenantFilter])
+
+    const columns = [
+        { title: 'Receipt', key: 'number', render: (_, receipt) => renderLink(get(receipt, 'number') || receipt.id, `/receipt/${receipt.id}`) },
+        { title: 'Tenant', key: 'tenant', render: (_, receipt) => renderLink(getTenantName(get(receipt, 'tenant')), `/tenant/${get(receipt, ['tenant', 'id'])}`) },
+        { title: 'Amount', key: 'amount', render: (_, receipt) => formatMoney(intl, get(receipt, 'amount'), get(receipt, 'currencyCode')) },
+        { title: 'Issued At', key: 'issuedAt', render: (_, receipt) => formatDate(get(receipt, 'issuedAt')) },
+        { title: 'Method', dataIndex: 'paymentMethod', key: 'paymentMethod' },
+        { title: 'Provider', dataIndex: 'provider', key: 'provider' },
+        { title: 'Reference', dataIndex: 'reference', key: 'reference' },
+        { title: 'Payment', key: 'payment', render: (_, receipt) => renderLink(get(receipt, ['payment', 'id']) || '—', `/payment/${get(receipt, ['payment', 'id'])}`) },
+    ]
+
+    return (
+        <PageWrapper>
+            <PageHeader title='Receipts' subTitle='Confirmed rent payment receipts' />
+            <TablePageContent>
+                <Space direction='vertical' size={24} width='100%'>
+                    <Typography.Text type='secondary'>
+                        Receipts are generated by the existing backend when payments are confirmed. Secrets and raw provider payloads are intentionally not shown here.
+                    </Typography.Text>
+                    <Card title='Filters' size='small'>
+                        <Space direction='vertical' size={12} width='100%'>
+                            <Input allowClear value={search} onChange={event => setSearch(event.target.value)} placeholder='Search by receipt number, tenant, reference, method, or provider' />
+                            <Space wrap>
+                                <Select allowClear showSearch placeholder='Tenant' value={tenantFilter} onChange={setTenantFilter} options={tenantOptions} style={{ minWidth: 220 }} />
+                                <Select allowClear placeholder='Method' value={methodFilter} onChange={setMethodFilter} options={[
+                                    { label: 'cash', value: 'cash' },
+                                    { label: 'bank_transfer', value: 'bank_transfer' },
+                                    { label: 'momo', value: 'momo' },
+                                    { label: 'card', value: 'card' },
+                                ]} style={{ minWidth: 180 }} />
+                                <Select allowClear placeholder='Provider' value={providerFilter} onChange={setProviderFilter} options={Array.from(new Set(receipts.map(receipt => get(receipt, 'provider')).filter(Boolean))).map(provider => ({ label: provider, value: provider }))} style={{ minWidth: 180 }} />
+                                <DatePicker.RangePicker value={dateRange || undefined} onChange={value => setDateRange(value as [dayjs.Dayjs | null, dayjs.Dayjs | null] | null)} />
+                            </Space>
+                        </Space>
+                    </Card>
+                    <PageError error={error} />
+                    <Table rowKey='id' loading={loading} columns={columns} dataSource={filteredReceipts} pagination={false} scroll={{ x: true }} />
+                </Space>
+            </TablePageContent>
+        </PageWrapper>
+    )
+}
+
+ReceiptsPage.requiredAccess = OrganizationRequired
+
+export default ReceiptsPage

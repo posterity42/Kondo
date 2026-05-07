@@ -16,6 +16,7 @@ const { BillingProperty } = require('./BillingProperty')
 const { BillingReceipt } = require('./BillingReceipt')
 const { BillingReceiptFile } = require('./BillingReceiptFile')
 const { BillingRecipient } = require('./BillingRecipient')
+const { GetTenantStatementService } = require('./GetTenantStatementService')
 const { LedgerEntry } = require('./LedgerEntry')
 const { PaymentAllocation } = require('./PaymentAllocation')
 const { PaymentReceipt } = require('./PaymentReceipt')
@@ -43,6 +44,7 @@ module.exports = {
     PaymentAllocation,
     PaymentReceipt,
     RentCharge,
+    GetTenantStatementService,
     AllResidentBillingReceiptsService,
     BillingRecipient,
     BillingCategory,

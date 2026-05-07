@@ -1,6 +1,6 @@
 import { Form, Typography } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useIntl } from '@open-condo/next/intl'
 import { useOrganization } from '@open-condo/next/organization'
@@ -24,7 +24,7 @@ export const UpdatePropertyForm: React.FC<IUpdatePropertyForm> = ({ id }) => {
     const ApplyChangesLabel = intl.formatMessage({ id: 'ApplyChanges' })
     const { push, query: { next }  } = useRouter()
     const { organization } = useOrganization()
-    const { refetch, obj: property, loading, error } = Property.useObject({ where: { id } })
+    const { obj: property, loading, error } = Property.useObject({ where: { id } })
     const initialValues = Property.convertToFormState(property)
     const action = Property.useUpdate({}, async (property) => {
         let redirectUrl = `/property/${property.id}`
@@ -36,10 +36,6 @@ export const UpdatePropertyForm: React.FC<IUpdatePropertyForm> = ({ id }) => {
         await push(redirectUrl)
     })
     const updateAction = (value) => action(value, property)
-
-    useEffect(() => {
-        refetch()
-    }, [refetch])
 
     if (error || loading) {
         return (

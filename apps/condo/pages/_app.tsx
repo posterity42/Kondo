@@ -148,6 +148,7 @@ interface IMenuItemData {
     path: string
     icon: React.FC
     label: string
+    labelRaw?: boolean
     access?: boolean
     excludePaths?: Array<RegExp>
 }
@@ -273,6 +274,22 @@ const MenuItems: React.FC = () => {
                     label: 'global.section.properties',
                     access: hasAccessToProperties,
                 },
+                {
+                    id: 'menu-item-rental-unit',
+                    path: 'rentalUnit',
+                    icon: AllIcons['Building'],
+                    label: 'Rental Units',
+                    labelRaw: true,
+                    access: hasAccessToProperties,
+                },
+                {
+                    id: 'menu-item-occupancy',
+                    path: 'occupancy',
+                    icon: AllIcons['Building'],
+                    label: 'Occupancies',
+                    labelRaw: true,
+                    access: hasAccessToProperties,
+                },
             ].filter(checkItemAccess),
         },
         {
@@ -283,6 +300,14 @@ const MenuItems: React.FC = () => {
                     path: 'contact',
                     icon: AllIcons['Contacts'],
                     label: 'global.section.contacts',
+                    access: isManagingCompany && hasAccessToContacts,
+                },
+                {
+                    id: 'menu-item-tenant',
+                    path: 'tenant',
+                    icon: AllIcons['Contacts'],
+                    label: 'Tenants',
+                    labelRaw: true,
                     access: isManagingCompany && hasAccessToContacts,
                 },
             ].filter(checkItemAccess),
@@ -323,6 +348,46 @@ const MenuItems: React.FC = () => {
                     access: isSPPOrg
                         ? hasAccessToBilling && anyReceiptsLoaded
                         : hasAccessToBilling,
+                },
+                {
+                    id: 'menu-item-rent-charge',
+                    path: 'rentCharge',
+                    icon: AllIcons['Wallet'],
+                    label: 'Rent Charges',
+                    labelRaw: true,
+                    access: hasAccessToBilling,
+                },
+                {
+                    id: 'menu-item-ledger',
+                    path: 'ledger',
+                    icon: AllIcons['Wallet'],
+                    label: 'Ledger',
+                    labelRaw: true,
+                    access: hasAccessToBilling,
+                },
+                {
+                    id: 'menu-item-payment',
+                    path: 'payment',
+                    icon: AllIcons['Wallet'],
+                    label: 'Payments',
+                    labelRaw: true,
+                    access: hasAccessToBilling,
+                },
+                {
+                    id: 'menu-item-payment-reversals',
+                    path: 'payment/reversals',
+                    icon: AllIcons['Wallet'],
+                    label: 'Payment Reversals',
+                    labelRaw: true,
+                    access: hasAccessToBilling,
+                },
+                {
+                    id: 'menu-item-receipt',
+                    path: 'receipt',
+                    icon: AllIcons['Wallet'],
+                    label: 'Receipts',
+                    labelRaw: true,
+                    access: hasAccessToBilling,
                 },
                 {
                     id: 'menu-item-service-provider-profile',
@@ -370,6 +435,14 @@ const MenuItems: React.FC = () => {
                     label: 'global.section.settings',
                     access: hasAccessToSettings,
                 },
+                {
+                    id: 'menu-item-payment-provider-settings',
+                    path: 'settings/paymentProvider',
+                    icon: AllIcons['Settings'],
+                    label: 'Payment Providers',
+                    labelRaw: true,
+                    access: hasAccessToSettings,
+                },
             ].filter(checkItemAccess),
         },
     ]), [hasAccessToAnalytics, isManagingCompany, hasAccessToTickets, hasAccessToIncidents, hasAccessToNewsItems, hasAccessToProperties, hasAccessToContacts, hasAccessToEmployees, hasAccessToMarketplace, isSPPOrg, hasAccessToBilling, anyReceiptsLoaded, sppBillingId, hasAccessToMeters, hasAccessToServices, connectedAppsIds, hasAccessToSettings, hasAccessToTour, isNoServiceProviderOrganization])
@@ -393,6 +466,7 @@ const MenuItems: React.FC = () => {
                                 path={`/${item.path}`}
                                 icon={item.icon}
                                 label={item.label}
+                                labelRaw={item.labelRaw}
                                 disabled={isDisabled}
                                 isCollapsed={isCollapsed}
                                 excludePaths={item.excludePaths}

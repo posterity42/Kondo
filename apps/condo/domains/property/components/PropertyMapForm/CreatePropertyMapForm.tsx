@@ -2,7 +2,7 @@ import { Form, Typography } from 'antd'
 import get from 'lodash/get'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useApolloClient } from '@open-condo/next/apollo'
 import { useIntl } from '@open-condo/next/intl'
@@ -29,7 +29,7 @@ const CreatePropertyMapForm: React.FC<ICreatePropertyForm> = ({ id }) => {
     const { push } = useRouter()
     const { organization, link } = useOrganization()
 
-    const { refetch, obj: property, loading, error } = Property.useObject({ where: { id } })
+    const { obj: property, loading, error } = Property.useObject({ where: { id } })
     const action = Property.useUpdate({}, () => push(`/property/${id}`))
     const updatePropertyAction = (value) => action(value, property).then(() => {
         client.cache.evict({ id: 'ROOT_QUERY', fieldName: '_allPropertiesMeta' })
@@ -37,10 +37,6 @@ const CreatePropertyMapForm: React.FC<ICreatePropertyForm> = ({ id }) => {
     })
 
     const initialValues = Property.convertToFormState(property)
-
-    useEffect(() => {
-        refetch()
-    }, [refetch])
 
     const canManageProperties = get(link, 'role.canManageProperties', false)
 
