@@ -24177,6 +24177,25 @@ export type ConfirmEmailActionsUpdateInput = {
   id: Scalars['ID']['input'];
 };
 
+export type ConfirmPaymentInput = {
+  amount: Scalars['String']['input'];
+  confirmedAt?: InputMaybe<Scalars['String']['input']>;
+  currencyCode: Scalars['String']['input'];
+  dv: Scalars['Int']['input'];
+  externalTransactionId: Scalars['String']['input'];
+  provider: Scalars['String']['input'];
+  providerReference: Scalars['String']['input'];
+  sender: SenderFieldInput;
+};
+
+export type ConfirmPaymentOutput = {
+  __typename?: 'ConfirmPaymentOutput';
+  allocations: Array<PaymentAllocation>;
+  ledgerBalance: Scalars['String']['output'];
+  payment: Payment;
+  receipt: PaymentReceipt;
+};
+
 /**  User confirm phone actions is used before registration starts  */
 export type ConfirmPhoneAction = {
   __typename?: 'ConfirmPhoneAction';
@@ -26180,6 +26199,21 @@ export type ContactsUpdateInput = {
 export type ContentConfiguration = {
   __typename?: 'ContentConfiguration';
   marketplace?: Maybe<MarketplaceContentConfigurationType>;
+};
+
+export type CreateAdminTenantProfileInput = {
+  dv: Scalars['Int']['input'];
+  email?: InputMaybe<Scalars['String']['input']>;
+  emergencyContactName?: InputMaybe<Scalars['String']['input']>;
+  emergencyContactPhone?: InputMaybe<Scalars['String']['input']>;
+  ghanaCardNumber?: InputMaybe<Scalars['String']['input']>;
+  institutionName?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+  phone: Scalars['String']['input'];
+  propertyId: Scalars['ID']['input'];
+  sender: SenderFieldInput;
+  studentIdNumber?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateBankAccountRequestInput = {
@@ -30327,6 +30361,47 @@ export type GetResidentExistenceByPhoneAndAddressOutput = {
   hasResidentOnAddress: Scalars['Boolean']['output'];
 };
 
+export type GetTenantStatementInput = {
+  dateFrom?: InputMaybe<Scalars['String']['input']>;
+  dateTo?: InputMaybe<Scalars['String']['input']>;
+  dv: Scalars['Int']['input'];
+  occupancy?: InputMaybe<OccupancyWhereUniqueInput>;
+  organization: OrganizationWhereUniqueInput;
+  property?: InputMaybe<PropertyWhereUniqueInput>;
+  sender: SenderFieldInput;
+  tenant: ResidentWhereUniqueInput;
+};
+
+export type HandleProviderWebhookIngressInput = {
+  confirmedAt?: InputMaybe<Scalars['String']['input']>;
+  environment?: InputMaybe<Scalars['String']['input']>;
+  headers?: InputMaybe<Scalars['JSON']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  mode?: InputMaybe<Scalars['String']['input']>;
+  parsedPayload?: InputMaybe<Scalars['JSON']['input']>;
+  payload?: InputMaybe<Scalars['JSON']['input']>;
+  provider?: InputMaybe<Scalars['String']['input']>;
+  providerCode?: InputMaybe<Scalars['String']['input']>;
+  rawBody?: InputMaybe<Scalars['String']['input']>;
+  requireVerifiedSignature?: InputMaybe<Scalars['Boolean']['input']>;
+  sandbox?: InputMaybe<Scalars['Boolean']['input']>;
+  testMode?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookPayload?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+export type HandleProviderWebhookIngressOutput = {
+  __typename?: 'HandleProviderWebhookIngressOutput';
+  actionTaken?: Maybe<Scalars['String']['output']>;
+  amount?: Maybe<Scalars['String']['output']>;
+  authorizationUrl?: Maybe<Scalars['String']['output']>;
+  currency?: Maybe<Scalars['String']['output']>;
+  paymentId?: Maybe<Scalars['ID']['output']>;
+  paymentUrl?: Maybe<Scalars['String']['output']>;
+  provider?: Maybe<Scalars['String']['output']>;
+  providerReference?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
+};
+
 /**  Entries of mass planned and emergency incidents with water, electricity, etc.  */
 export type Incident = {
   __typename?: 'Incident';
@@ -32804,6 +32879,41 @@ export type IncidentsCreateInput = {
 export type IncidentsUpdateInput = {
   data?: InputMaybe<IncidentUpdateInput>;
   id: Scalars['ID']['input'];
+};
+
+export type InitiateRentPaymentInput = {
+  amount: Scalars['String']['input'];
+  currency?: InputMaybe<Scalars['String']['input']>;
+  currencyCode?: InputMaybe<Scalars['String']['input']>;
+  dv: Scalars['Int']['input'];
+  occupancy?: InputMaybe<OccupancyWhereUniqueInput>;
+  organization: OrganizationWhereUniqueInput;
+  payer?: InputMaybe<Scalars['JSON']['input']>;
+  payerContact?: InputMaybe<Scalars['JSON']['input']>;
+  paymentContext?: InputMaybe<Scalars['JSON']['input']>;
+  paymentMethod?: InputMaybe<Scalars['String']['input']>;
+  property?: InputMaybe<PropertyWhereUniqueInput>;
+  providerCode: Scalars['String']['input'];
+  providerReference?: InputMaybe<Scalars['String']['input']>;
+  purpose?: InputMaybe<Scalars['String']['input']>;
+  reference?: InputMaybe<Scalars['String']['input']>;
+  rentContext?: InputMaybe<Scalars['JSON']['input']>;
+  rentalUnit?: InputMaybe<RentalUnitWhereUniqueInput>;
+  sender: SenderFieldInput;
+  tenant?: InputMaybe<ResidentWhereUniqueInput>;
+};
+
+export type InitiateRentPaymentOutput = {
+  __typename?: 'InitiateRentPaymentOutput';
+  actionTaken?: Maybe<Scalars['String']['output']>;
+  amount?: Maybe<Scalars['String']['output']>;
+  authorizationUrl?: Maybe<Scalars['String']['output']>;
+  currency?: Maybe<Scalars['String']['output']>;
+  paymentId?: Maybe<Scalars['ID']['output']>;
+  paymentUrl?: Maybe<Scalars['String']['output']>;
+  provider?: Maybe<Scalars['String']['output']>;
+  providerReference?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
 };
 
 export type InviteNewOrganizationEmployeeInput = {
@@ -46505,6 +46615,7 @@ export type Mutation = {
    * }`
    */
   completeConfirmPhoneAction?: Maybe<CompleteConfirmPhoneActionOutput>;
+  confirmPayment?: Maybe<ConfirmPaymentOutput>;
   /**  Create a single AcquiringIntegration item.  */
   createAcquiringIntegration?: Maybe<AcquiringIntegration>;
   /**  Create a single AcquiringIntegrationAccessRight item.  */
@@ -46529,6 +46640,7 @@ export type Mutation = {
   createAcquiringIntegrationHistoryRecords?: Maybe<Array<Maybe<AcquiringIntegrationHistoryRecord>>>;
   /**  Create multiple AcquiringIntegration items.  */
   createAcquiringIntegrations?: Maybe<Array<Maybe<AcquiringIntegration>>>;
+  createAdminTenantProfile?: Maybe<Resident>;
   /**  Create a single AppMessageSetting item.  */
   createAppMessageSetting?: Maybe<AppMessageSetting>;
   /**  Create a single AppMessageSettingHistoryRecord item.  */
@@ -47341,6 +47453,14 @@ export type Mutation = {
   createPaymentHistoryRecord?: Maybe<PaymentHistoryRecord>;
   /**  Create multiple PaymentHistoryRecord items.  */
   createPaymentHistoryRecords?: Maybe<Array<Maybe<PaymentHistoryRecord>>>;
+  /**  Create a single PaymentProviderCredential item.  */
+  createPaymentProviderCredential?: Maybe<PaymentProviderCredential>;
+  /**  Create a single PaymentProviderCredentialHistoryRecord item.  */
+  createPaymentProviderCredentialHistoryRecord?: Maybe<PaymentProviderCredentialHistoryRecord>;
+  /**  Create multiple PaymentProviderCredentialHistoryRecord items.  */
+  createPaymentProviderCredentialHistoryRecords?: Maybe<Array<Maybe<PaymentProviderCredentialHistoryRecord>>>;
+  /**  Create multiple PaymentProviderCredential items.  */
+  createPaymentProviderCredentials?: Maybe<Array<Maybe<PaymentProviderCredential>>>;
   /**  Create a single PaymentReceipt item.  */
   createPaymentReceipt?: Maybe<PaymentReceipt>;
   /**  Create a single PaymentReceiptHistoryRecord item.  */
@@ -48609,6 +48729,14 @@ export type Mutation = {
   deletePaymentHistoryRecord?: Maybe<PaymentHistoryRecord>;
   /**  Delete multiple PaymentHistoryRecord items by ID.  */
   deletePaymentHistoryRecords?: Maybe<Array<Maybe<PaymentHistoryRecord>>>;
+  /**  Delete a single PaymentProviderCredential item by ID.  */
+  deletePaymentProviderCredential?: Maybe<PaymentProviderCredential>;
+  /**  Delete a single PaymentProviderCredentialHistoryRecord item by ID.  */
+  deletePaymentProviderCredentialHistoryRecord?: Maybe<PaymentProviderCredentialHistoryRecord>;
+  /**  Delete multiple PaymentProviderCredentialHistoryRecord items by ID.  */
+  deletePaymentProviderCredentialHistoryRecords?: Maybe<Array<Maybe<PaymentProviderCredentialHistoryRecord>>>;
+  /**  Delete multiple PaymentProviderCredential items by ID.  */
+  deletePaymentProviderCredentials?: Maybe<Array<Maybe<PaymentProviderCredential>>>;
   /**  Delete a single PaymentReceipt item by ID.  */
   deletePaymentReceipt?: Maybe<PaymentReceipt>;
   /**  Delete a single PaymentReceiptHistoryRecord item by ID.  */
@@ -49099,6 +49227,8 @@ export type Mutation = {
    * }`
    */
   generateSudoToken?: Maybe<GenerateSudoTokenOutput>;
+  handleProviderWebhookIngress?: Maybe<HandleProviderWebhookIngressOutput>;
+  initiateRentPayment?: Maybe<InitiateRentPaymentOutput>;
   /**
    * Invites staff-user into specified Organization
    *
@@ -52975,6 +53105,14 @@ export type Mutation = {
   updatePaymentHistoryRecord?: Maybe<PaymentHistoryRecord>;
   /**  Update multiple PaymentHistoryRecord items by ID.  */
   updatePaymentHistoryRecords?: Maybe<Array<Maybe<PaymentHistoryRecord>>>;
+  /**  Update a single PaymentProviderCredential item by ID.  */
+  updatePaymentProviderCredential?: Maybe<PaymentProviderCredential>;
+  /**  Update a single PaymentProviderCredentialHistoryRecord item by ID.  */
+  updatePaymentProviderCredentialHistoryRecord?: Maybe<PaymentProviderCredentialHistoryRecord>;
+  /**  Update multiple PaymentProviderCredentialHistoryRecord items by ID.  */
+  updatePaymentProviderCredentialHistoryRecords?: Maybe<Array<Maybe<PaymentProviderCredentialHistoryRecord>>>;
+  /**  Update multiple PaymentProviderCredential items by ID.  */
+  updatePaymentProviderCredentials?: Maybe<Array<Maybe<PaymentProviderCredential>>>;
   /**  Update a single PaymentReceipt item by ID.  */
   updatePaymentReceipt?: Maybe<PaymentReceipt>;
   /**  Update a single PaymentReceiptHistoryRecord item by ID.  */
@@ -53410,6 +53548,7 @@ export type Mutation = {
   /**  Update multiple Webhook items by ID.  */
   updateWebhooks?: Maybe<Array<Maybe<Webhook>>>;
   validateQRCode?: Maybe<ValidateQrCodeOutput>;
+  verifyPendingPayment?: Maybe<VerifyPendingPaymentOutput>;
   /**
    * Verifies the user's current email
    *
@@ -53594,6 +53733,11 @@ export type MutationCompleteConfirmPhoneActionArgs = {
 };
 
 
+export type MutationConfirmPaymentArgs = {
+  data: ConfirmPaymentInput;
+};
+
+
 export type MutationCreateAcquiringIntegrationArgs = {
   data?: InputMaybe<AcquiringIntegrationCreateInput>;
 };
@@ -53651,6 +53795,11 @@ export type MutationCreateAcquiringIntegrationHistoryRecordsArgs = {
 
 export type MutationCreateAcquiringIntegrationsArgs = {
   data?: InputMaybe<Array<InputMaybe<AcquiringIntegrationsCreateInput>>>;
+};
+
+
+export type MutationCreateAdminTenantProfileArgs = {
+  data: CreateAdminTenantProfileInput;
 };
 
 
@@ -55686,6 +55835,26 @@ export type MutationCreatePaymentHistoryRecordArgs = {
 
 export type MutationCreatePaymentHistoryRecordsArgs = {
   data?: InputMaybe<Array<InputMaybe<PaymentHistoryRecordsCreateInput>>>;
+};
+
+
+export type MutationCreatePaymentProviderCredentialArgs = {
+  data?: InputMaybe<PaymentProviderCredentialCreateInput>;
+};
+
+
+export type MutationCreatePaymentProviderCredentialHistoryRecordArgs = {
+  data?: InputMaybe<PaymentProviderCredentialHistoryRecordCreateInput>;
+};
+
+
+export type MutationCreatePaymentProviderCredentialHistoryRecordsArgs = {
+  data?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordsCreateInput>>>;
+};
+
+
+export type MutationCreatePaymentProviderCredentialsArgs = {
+  data?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialsCreateInput>>>;
 };
 
 
@@ -58859,6 +59028,26 @@ export type MutationDeletePaymentHistoryRecordsArgs = {
 };
 
 
+export type MutationDeletePaymentProviderCredentialArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePaymentProviderCredentialHistoryRecordArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePaymentProviderCredentialHistoryRecordsArgs = {
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+
+export type MutationDeletePaymentProviderCredentialsArgs = {
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+
 export type MutationDeletePaymentReceiptArgs = {
   id: Scalars['ID']['input'];
 };
@@ -59956,6 +60145,16 @@ export type MutationDiscoverServiceConsumersArgs = {
 
 export type MutationGenerateSudoTokenArgs = {
   data: GenerateSudoTokenInput;
+};
+
+
+export type MutationHandleProviderWebhookIngressArgs = {
+  data: HandleProviderWebhookIngressInput;
+};
+
+
+export type MutationInitiateRentPaymentArgs = {
+  data: InitiateRentPaymentInput;
 };
 
 
@@ -62488,6 +62687,28 @@ export type MutationUpdatePaymentHistoryRecordsArgs = {
 };
 
 
+export type MutationUpdatePaymentProviderCredentialArgs = {
+  data?: InputMaybe<PaymentProviderCredentialUpdateInput>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdatePaymentProviderCredentialHistoryRecordArgs = {
+  data?: InputMaybe<PaymentProviderCredentialHistoryRecordUpdateInput>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdatePaymentProviderCredentialHistoryRecordsArgs = {
+  data?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordsUpdateInput>>>;
+};
+
+
+export type MutationUpdatePaymentProviderCredentialsArgs = {
+  data?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialsUpdateInput>>>;
+};
+
+
 export type MutationUpdatePaymentReceiptArgs = {
   data?: InputMaybe<PaymentReceiptUpdateInput>;
   id: Scalars['ID']['input'];
@@ -63683,6 +63904,11 @@ export type MutationUpdateWebhooksArgs = {
 
 export type MutationValidateQrCodeArgs = {
   data: ValidateQrCodeInput;
+};
+
+
+export type MutationVerifyPendingPaymentArgs = {
+  data: VerifyPendingPaymentInput;
 };
 
 
@@ -69651,6 +69877,7 @@ export type OrganizationEmployeeRole = {
   canManageOrganizationEmployeeRequests?: Maybe<Scalars['Boolean']['output']>;
   canManageProperties?: Maybe<Scalars['Boolean']['output']>;
   canManagePropertyScopes?: Maybe<Scalars['Boolean']['output']>;
+  canManageResidents?: Maybe<Scalars['Boolean']['output']>;
   canManageRoles?: Maybe<Scalars['Boolean']['output']>;
   canManageSubscriptions?: Maybe<Scalars['Boolean']['output']>;
   canManageTicketAutoAssignments?: Maybe<Scalars['Boolean']['output']>;
@@ -69677,6 +69904,7 @@ export type OrganizationEmployeeRole = {
   canReadPayments?: Maybe<Scalars['Boolean']['output']>;
   canReadPaymentsWithInvoices?: Maybe<Scalars['Boolean']['output']>;
   canReadProperties?: Maybe<Scalars['Boolean']['output']>;
+  canReadResidents?: Maybe<Scalars['Boolean']['output']>;
   canReadServices?: Maybe<Scalars['Boolean']['output']>;
   canReadSettings?: Maybe<Scalars['Boolean']['output']>;
   canReadTickets?: Maybe<Scalars['Boolean']['output']>;
@@ -69759,6 +69987,7 @@ export type OrganizationEmployeeRoleCreateInput = {
   canManageOrganizationEmployeeRequests?: InputMaybe<Scalars['Boolean']['input']>;
   canManageProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
   canManageTicketAutoAssignments?: InputMaybe<Scalars['Boolean']['input']>;
@@ -69785,6 +70014,7 @@ export type OrganizationEmployeeRoleCreateInput = {
   canReadPayments?: InputMaybe<Scalars['Boolean']['input']>;
   canReadPaymentsWithInvoices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
   canReadTickets?: InputMaybe<Scalars['Boolean']['input']>;
@@ -69853,6 +70083,7 @@ export type OrganizationEmployeeRoleHistoryRecord = {
   canManageOrganizationEmployeeRequests?: Maybe<Scalars['Boolean']['output']>;
   canManageProperties?: Maybe<Scalars['Boolean']['output']>;
   canManagePropertyScopes?: Maybe<Scalars['Boolean']['output']>;
+  canManageResidents?: Maybe<Scalars['Boolean']['output']>;
   canManageRoles?: Maybe<Scalars['Boolean']['output']>;
   canManageSubscriptions?: Maybe<Scalars['Boolean']['output']>;
   canManageTicketAutoAssignments?: Maybe<Scalars['Boolean']['output']>;
@@ -69879,6 +70110,7 @@ export type OrganizationEmployeeRoleHistoryRecord = {
   canReadPayments?: Maybe<Scalars['Boolean']['output']>;
   canReadPaymentsWithInvoices?: Maybe<Scalars['Boolean']['output']>;
   canReadProperties?: Maybe<Scalars['Boolean']['output']>;
+  canReadResidents?: Maybe<Scalars['Boolean']['output']>;
   canReadServices?: Maybe<Scalars['Boolean']['output']>;
   canReadSettings?: Maybe<Scalars['Boolean']['output']>;
   canReadTickets?: Maybe<Scalars['Boolean']['output']>;
@@ -69939,6 +70171,7 @@ export type OrganizationEmployeeRoleHistoryRecordCreateInput = {
   canManageOrganizationEmployeeRequests?: InputMaybe<Scalars['Boolean']['input']>;
   canManageProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
   canManageTicketAutoAssignments?: InputMaybe<Scalars['Boolean']['input']>;
@@ -69965,6 +70198,7 @@ export type OrganizationEmployeeRoleHistoryRecordCreateInput = {
   canReadPayments?: InputMaybe<Scalars['Boolean']['input']>;
   canReadPaymentsWithInvoices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
   canReadTickets?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70030,6 +70264,7 @@ export type OrganizationEmployeeRoleHistoryRecordUpdateInput = {
   canManageOrganizationEmployeeRequests?: InputMaybe<Scalars['Boolean']['input']>;
   canManageProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
   canManageTicketAutoAssignments?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70056,6 +70291,7 @@ export type OrganizationEmployeeRoleHistoryRecordUpdateInput = {
   canReadPayments?: InputMaybe<Scalars['Boolean']['input']>;
   canReadPaymentsWithInvoices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
   canReadTickets?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70152,6 +70388,8 @@ export type OrganizationEmployeeRoleHistoryRecordWhereInput = {
   canManageProperties_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes_not?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70204,6 +70442,8 @@ export type OrganizationEmployeeRoleHistoryRecordWhereInput = {
   canReadPayments_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties_not?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70405,6 +70645,7 @@ export type OrganizationEmployeeRoleUpdateInput = {
   canManageOrganizationEmployeeRequests?: InputMaybe<Scalars['Boolean']['input']>;
   canManageProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
   canManageTicketAutoAssignments?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70431,6 +70672,7 @@ export type OrganizationEmployeeRoleUpdateInput = {
   canReadPayments?: InputMaybe<Scalars['Boolean']['input']>;
   canReadPaymentsWithInvoices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
   canReadTickets?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70526,6 +70768,8 @@ export type OrganizationEmployeeRoleWhereInput = {
   canManageProperties_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes?: InputMaybe<Scalars['Boolean']['input']>;
   canManagePropertyScopes_not?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents?: InputMaybe<Scalars['Boolean']['input']>;
+  canManageResidents_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles?: InputMaybe<Scalars['Boolean']['input']>;
   canManageRoles_not?: InputMaybe<Scalars['Boolean']['input']>;
   canManageSubscriptions?: InputMaybe<Scalars['Boolean']['input']>;
@@ -70578,6 +70822,8 @@ export type OrganizationEmployeeRoleWhereInput = {
   canReadPayments_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties?: InputMaybe<Scalars['Boolean']['input']>;
   canReadProperties_not?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents?: InputMaybe<Scalars['Boolean']['input']>;
+  canReadResidents_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices?: InputMaybe<Scalars['Boolean']['input']>;
   canReadServices_not?: InputMaybe<Scalars['Boolean']['input']>;
   canReadSettings?: InputMaybe<Scalars['Boolean']['input']>;
@@ -72535,6 +72781,12 @@ export type Payment = {
   property?: Maybe<Property>;
   /**  Rent payment provider  */
   provider?: Maybe<PaymentProviderType>;
+  /**  Provider credential environment used for this online payment flow  */
+  providerEnvironment?: Maybe<Scalars['String']['output']>;
+  /**  Raw provider initialization response stored for pending online rent payment intents  */
+  providerInitResponse?: Maybe<Scalars['JSON']['output']>;
+  /**  Provider-side initiation reference used for idempotent pending online payment intents  */
+  providerReference?: Maybe<Scalars['String']['output']>;
   /**  Purpose of payment. Mostly used as title such as "Payment by agreement №123"  */
   purpose?: Maybe<Scalars['String']['output']>;
   /**  Non-normalized address that was imported from the organization  */
@@ -73268,6 +73520,9 @@ export type PaymentCreateInput = {
   posReceiptUrl?: InputMaybe<Scalars['String']['input']>;
   property?: InputMaybe<PropertyRelateToOneInput>;
   provider?: InputMaybe<PaymentProviderType>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
   purpose?: InputMaybe<Scalars['String']['input']>;
   rawAddress?: InputMaybe<Scalars['String']['input']>;
   receipt?: InputMaybe<BillingReceiptRelateToOneInput>;
@@ -73524,6 +73779,9 @@ export type PaymentHistoryRecord = {
   posReceiptUrl?: Maybe<Scalars['String']['output']>;
   property?: Maybe<Scalars['String']['output']>;
   provider?: Maybe<Scalars['String']['output']>;
+  providerEnvironment?: Maybe<Scalars['String']['output']>;
+  providerInitResponse?: Maybe<Scalars['JSON']['output']>;
+  providerReference?: Maybe<Scalars['String']['output']>;
   purpose?: Maybe<Scalars['String']['output']>;
   rawAddress?: Maybe<Scalars['String']['output']>;
   receipt?: Maybe<Scalars['String']['output']>;
@@ -73580,6 +73838,9 @@ export type PaymentHistoryRecordCreateInput = {
   posReceiptUrl?: InputMaybe<Scalars['String']['input']>;
   property?: InputMaybe<Scalars['String']['input']>;
   provider?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
   purpose?: InputMaybe<Scalars['String']['input']>;
   rawAddress?: InputMaybe<Scalars['String']['input']>;
   receipt?: InputMaybe<Scalars['String']['input']>;
@@ -73642,6 +73903,9 @@ export type PaymentHistoryRecordUpdateInput = {
   posReceiptUrl?: InputMaybe<Scalars['String']['input']>;
   property?: InputMaybe<Scalars['String']['input']>;
   provider?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
   purpose?: InputMaybe<Scalars['String']['input']>;
   rawAddress?: InputMaybe<Scalars['String']['input']>;
   receipt?: InputMaybe<Scalars['String']['input']>;
@@ -73949,6 +74213,46 @@ export type PaymentHistoryRecordWhereInput = {
   property_not?: InputMaybe<Scalars['String']['input']>;
   property_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   provider?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_contains?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerEnvironment_not?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_contains?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerEnvironment_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerInitResponse_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  providerInitResponse_not?: InputMaybe<Scalars['JSON']['input']>;
+  providerInitResponse_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
+  providerReference_contains?: InputMaybe<Scalars['String']['input']>;
+  providerReference_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerReference_not?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_contains?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerReference_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_starts_with_i?: InputMaybe<Scalars['String']['input']>;
   provider_contains?: InputMaybe<Scalars['String']['input']>;
   provider_contains_i?: InputMaybe<Scalars['String']['input']>;
   provider_ends_with?: InputMaybe<Scalars['String']['input']>;
@@ -74183,6 +74487,737 @@ export enum PaymentPaymentMethodType {
   Cash = 'cash',
   Momo = 'momo'
 }
+
+/**  Organization-scoped payment provider credentials used for internal acquiring operations  */
+export type PaymentProviderCredential = {
+  __typename?: 'PaymentProviderCredential';
+  /**
+   * This virtual field will be resolved in one of the following ways (in this order):
+   *  1. Execution of 'labelResolver' set on the PaymentProviderCredential List config, or
+   *  2. As an alias to the field set on 'labelField' in the PaymentProviderCredential List config, or
+   *  3. As an alias to a 'name' field on the PaymentProviderCredential List (if one exists), or
+   *  4. As an alias to the 'id' field on the PaymentProviderCredential List.
+   */
+  _label_?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['String']['output']>;
+  /**  Identifies a user, which has created this record. It is a technical connection, that can represent real users, as well as automated systems (bots, scripts). This field should not participate in business logic.  */
+  createdBy?: Maybe<User>;
+  /**  Default credential currency code  */
+  currency?: Maybe<PaymentProviderCredentialCurrencyType>;
+  deletedAt?: Maybe<Scalars['String']['output']>;
+  /**  Data structure Version  */
+  dv?: Maybe<Scalars['Int']['output']>;
+  /**  Provider credential environment  */
+  environment?: Maybe<PaymentProviderCredentialEnvironmentType>;
+  id: Scalars['ID']['output'];
+  /**  Whether payment initiation is enabled for this credential  */
+  initiationEnabled?: Maybe<Scalars['Boolean']['output']>;
+  /**  Whether this credential is enabled overall  */
+  isEnabled?: Maybe<Scalars['Boolean']['output']>;
+  /**  Internal-only credential metadata  */
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  newId?: Maybe<Scalars['String']['output']>;
+  /**  Ref to the organization. The object will be deleted if the organization ceases to exist  */
+  organization?: Maybe<Organization>;
+  /**  Payment provider code  */
+  provider?: Maybe<PaymentProviderCredentialProviderType>;
+  /**  Optional provider public key  */
+  publicKey?: Maybe<Scalars['String']['output']>;
+  /**  Encrypted provider secret key  */
+  secretKey?: Maybe<Scalars['String']['output']>;
+  /**  Client-side device identification used for the anti-fraud detection. Example `{ "dv":1, "fingerprint":"VaxSw2aXZa"}`. Where the `fingerprint` should be the same for the same devices and it's not linked to the user ID. It's the device ID like browser / mobile application / remote system  */
+  sender?: Maybe<SenderField>;
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  /**  Identifies a user, which has updated this record. It is a technical connection, that can represent real users, as well as automated systems (bots, scripts). This field should not participate in business logic.  */
+  updatedBy?: Maybe<User>;
+  v?: Maybe<Scalars['Int']['output']>;
+  /**  Whether payment verification is enabled for this credential  */
+  verificationEnabled?: Maybe<Scalars['Boolean']['output']>;
+  /**  Whether webhook ingestion is enabled for this credential  */
+  webhookEnabled?: Maybe<Scalars['Boolean']['output']>;
+  /**  Encrypted provider webhook verification secret  */
+  webhookSecret?: Maybe<Scalars['String']['output']>;
+};
+
+export type PaymentProviderCredentialCreateInput = {
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<UserRelateToOneInput>;
+  currency?: InputMaybe<PaymentProviderCredentialCurrencyType>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  environment?: InputMaybe<PaymentProviderCredentialEnvironmentType>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  newId?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<OrganizationRelateToOneInput>;
+  provider?: InputMaybe<PaymentProviderCredentialProviderType>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['String']['input']>;
+  sender?: InputMaybe<SenderFieldInput>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedBy?: InputMaybe<UserRelateToOneInput>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['String']['input']>;
+};
+
+export enum PaymentProviderCredentialCurrencyType {
+  Aed = 'AED',
+  Afn = 'AFN',
+  All = 'ALL',
+  Amd = 'AMD',
+  Ang = 'ANG',
+  Aoa = 'AOA',
+  Ars = 'ARS',
+  Aud = 'AUD',
+  Awg = 'AWG',
+  Azn = 'AZN',
+  Bam = 'BAM',
+  Bbd = 'BBD',
+  Bdt = 'BDT',
+  Bgn = 'BGN',
+  Bhd = 'BHD',
+  Bif = 'BIF',
+  Bmd = 'BMD',
+  Bnd = 'BND',
+  Bob = 'BOB',
+  Bov = 'BOV',
+  Brl = 'BRL',
+  Bsd = 'BSD',
+  Btn = 'BTN',
+  Bwp = 'BWP',
+  Byn = 'BYN',
+  Bzd = 'BZD',
+  Cad = 'CAD',
+  Cdf = 'CDF',
+  Che = 'CHE',
+  Chf = 'CHF',
+  Chw = 'CHW',
+  Clf = 'CLF',
+  Clp = 'CLP',
+  Cny = 'CNY',
+  Cop = 'COP',
+  Cou = 'COU',
+  Crc = 'CRC',
+  Cuc = 'CUC',
+  Cup = 'CUP',
+  Cve = 'CVE',
+  Czk = 'CZK',
+  Djf = 'DJF',
+  Dkk = 'DKK',
+  Dop = 'DOP',
+  Dzd = 'DZD',
+  Egp = 'EGP',
+  Ern = 'ERN',
+  Etb = 'ETB',
+  Eur = 'EUR',
+  Fjd = 'FJD',
+  Fkp = 'FKP',
+  Gbp = 'GBP',
+  Gel = 'GEL',
+  Ghs = 'GHS',
+  Gip = 'GIP',
+  Gmd = 'GMD',
+  Gnf = 'GNF',
+  Gtq = 'GTQ',
+  Gyd = 'GYD',
+  Hkd = 'HKD',
+  Hnl = 'HNL',
+  Hrk = 'HRK',
+  Htg = 'HTG',
+  Huf = 'HUF',
+  Idr = 'IDR',
+  Ils = 'ILS',
+  Inr = 'INR',
+  Iqd = 'IQD',
+  Irr = 'IRR',
+  Isk = 'ISK',
+  Jmd = 'JMD',
+  Jod = 'JOD',
+  Jpy = 'JPY',
+  Kes = 'KES',
+  Kgs = 'KGS',
+  Khr = 'KHR',
+  Kmf = 'KMF',
+  Kpw = 'KPW',
+  Krw = 'KRW',
+  Kwd = 'KWD',
+  Kyd = 'KYD',
+  Kzt = 'KZT',
+  Lak = 'LAK',
+  Lbp = 'LBP',
+  Lkr = 'LKR',
+  Lrd = 'LRD',
+  Lsl = 'LSL',
+  Lyd = 'LYD',
+  Mad = 'MAD',
+  Mdl = 'MDL',
+  Mga = 'MGA',
+  Mkd = 'MKD',
+  Mmk = 'MMK',
+  Mnt = 'MNT',
+  Mop = 'MOP',
+  Mru = 'MRU',
+  Mur = 'MUR',
+  Mvr = 'MVR',
+  Mwk = 'MWK',
+  Mxn = 'MXN',
+  Mxv = 'MXV',
+  Myr = 'MYR',
+  Mzn = 'MZN',
+  Nad = 'NAD',
+  Ngn = 'NGN',
+  Nio = 'NIO',
+  Nok = 'NOK',
+  Npr = 'NPR',
+  Nzd = 'NZD',
+  Omr = 'OMR',
+  Pab = 'PAB',
+  Pen = 'PEN',
+  Pgk = 'PGK',
+  Php = 'PHP',
+  Pkr = 'PKR',
+  Pln = 'PLN',
+  Pyg = 'PYG',
+  Qar = 'QAR',
+  Ron = 'RON',
+  Rsd = 'RSD',
+  Rub = 'RUB',
+  Rwf = 'RWF',
+  Sar = 'SAR',
+  Sbd = 'SBD',
+  Scr = 'SCR',
+  Sdg = 'SDG',
+  Sek = 'SEK',
+  Sgd = 'SGD',
+  Shp = 'SHP',
+  Sll = 'SLL',
+  Sos = 'SOS',
+  Srd = 'SRD',
+  Ssp = 'SSP',
+  Stn = 'STN',
+  Svc = 'SVC',
+  Syp = 'SYP',
+  Szl = 'SZL',
+  Thb = 'THB',
+  Tjs = 'TJS',
+  Tmt = 'TMT',
+  Tnd = 'TND',
+  Top = 'TOP',
+  Try = 'TRY',
+  Ttd = 'TTD',
+  Twd = 'TWD',
+  Tzs = 'TZS',
+  Uah = 'UAH',
+  Ugx = 'UGX',
+  Usd = 'USD',
+  Usn = 'USN',
+  Uyi = 'UYI',
+  Uyu = 'UYU',
+  Uyw = 'UYW',
+  Uzs = 'UZS',
+  Ves = 'VES',
+  Vnd = 'VND',
+  Vuv = 'VUV',
+  Wst = 'WST',
+  Xaf = 'XAF',
+  Xag = 'XAG',
+  Xau = 'XAU',
+  Xba = 'XBA',
+  Xbb = 'XBB',
+  Xbc = 'XBC',
+  Xbd = 'XBD',
+  Xcd = 'XCD',
+  Xdr = 'XDR',
+  Xof = 'XOF',
+  Xpd = 'XPD',
+  Xpf = 'XPF',
+  Xpt = 'XPT',
+  Xsu = 'XSU',
+  Xts = 'XTS',
+  Xua = 'XUA',
+  Yer = 'YER',
+  Zar = 'ZAR',
+  Zmw = 'ZMW',
+  Zwl = 'ZWL'
+}
+
+export enum PaymentProviderCredentialEnvironmentType {
+  Live = 'live',
+  Test = 'test'
+}
+
+/**  A keystone list  */
+export type PaymentProviderCredentialHistoryRecord = {
+  __typename?: 'PaymentProviderCredentialHistoryRecord';
+  /**
+   * This virtual field will be resolved in one of the following ways (in this order):
+   *  1. Execution of 'labelResolver' set on the PaymentProviderCredentialHistoryRecord List config, or
+   *  2. As an alias to the field set on 'labelField' in the PaymentProviderCredentialHistoryRecord List config, or
+   *  3. As an alias to a 'name' field on the PaymentProviderCredentialHistoryRecord List (if one exists), or
+   *  4. As an alias to the 'id' field on the PaymentProviderCredentialHistoryRecord List.
+   */
+  _label_?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['String']['output']>;
+  createdBy?: Maybe<Scalars['String']['output']>;
+  currency?: Maybe<Scalars['String']['output']>;
+  deletedAt?: Maybe<Scalars['String']['output']>;
+  dv?: Maybe<Scalars['Int']['output']>;
+  environment?: Maybe<Scalars['String']['output']>;
+  history_action?: Maybe<PaymentProviderCredentialHistoryRecordHistoryActionType>;
+  history_date?: Maybe<Scalars['String']['output']>;
+  history_id?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  initiationEnabled?: Maybe<Scalars['Boolean']['output']>;
+  isEnabled?: Maybe<Scalars['Boolean']['output']>;
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  newId?: Maybe<Scalars['JSON']['output']>;
+  organization?: Maybe<Scalars['String']['output']>;
+  provider?: Maybe<Scalars['String']['output']>;
+  publicKey?: Maybe<Scalars['String']['output']>;
+  secretKey?: Maybe<Scalars['JSON']['output']>;
+  sender?: Maybe<Scalars['JSON']['output']>;
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  updatedBy?: Maybe<Scalars['String']['output']>;
+  v?: Maybe<Scalars['Int']['output']>;
+  verificationEnabled?: Maybe<Scalars['Boolean']['output']>;
+  webhookEnabled?: Maybe<Scalars['Boolean']['output']>;
+  webhookSecret?: Maybe<Scalars['JSON']['output']>;
+};
+
+export type PaymentProviderCredentialHistoryRecordCreateInput = {
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  currency?: InputMaybe<Scalars['String']['input']>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  environment?: InputMaybe<Scalars['String']['input']>;
+  history_action?: InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>;
+  history_date?: InputMaybe<Scalars['String']['input']>;
+  history_id?: InputMaybe<Scalars['String']['input']>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  newId?: InputMaybe<Scalars['JSON']['input']>;
+  organization?: InputMaybe<Scalars['String']['input']>;
+  provider?: InputMaybe<Scalars['String']['input']>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['JSON']['input']>;
+  sender?: InputMaybe<Scalars['JSON']['input']>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedBy?: InputMaybe<Scalars['String']['input']>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+export enum PaymentProviderCredentialHistoryRecordHistoryActionType {
+  C = 'c',
+  D = 'd',
+  U = 'u'
+}
+
+export type PaymentProviderCredentialHistoryRecordUpdateInput = {
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  currency?: InputMaybe<Scalars['String']['input']>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  environment?: InputMaybe<Scalars['String']['input']>;
+  history_action?: InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>;
+  history_date?: InputMaybe<Scalars['String']['input']>;
+  history_id?: InputMaybe<Scalars['String']['input']>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  newId?: InputMaybe<Scalars['JSON']['input']>;
+  organization?: InputMaybe<Scalars['String']['input']>;
+  provider?: InputMaybe<Scalars['String']['input']>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['JSON']['input']>;
+  sender?: InputMaybe<Scalars['JSON']['input']>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedBy?: InputMaybe<Scalars['String']['input']>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+export type PaymentProviderCredentialHistoryRecordWhereInput = {
+  AND?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordWhereInput>>>;
+  OR?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordWhereInput>>>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_gt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_gte?: InputMaybe<Scalars['String']['input']>;
+  createdAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  createdAt_lt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_lte?: InputMaybe<Scalars['String']['input']>;
+  createdAt_not?: InputMaybe<Scalars['String']['input']>;
+  createdAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  createdBy_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  createdBy_not?: InputMaybe<Scalars['String']['input']>;
+  createdBy_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  currency?: InputMaybe<Scalars['String']['input']>;
+  currency_contains?: InputMaybe<Scalars['String']['input']>;
+  currency_contains_i?: InputMaybe<Scalars['String']['input']>;
+  currency_ends_with?: InputMaybe<Scalars['String']['input']>;
+  currency_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  currency_i?: InputMaybe<Scalars['String']['input']>;
+  currency_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  currency_not?: InputMaybe<Scalars['String']['input']>;
+  currency_not_contains?: InputMaybe<Scalars['String']['input']>;
+  currency_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  currency_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  currency_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  currency_not_i?: InputMaybe<Scalars['String']['input']>;
+  currency_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  currency_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  currency_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  currency_starts_with?: InputMaybe<Scalars['String']['input']>;
+  currency_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_gt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_gte?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  deletedAt_lt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_lte?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_not?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  dv_gt?: InputMaybe<Scalars['Int']['input']>;
+  dv_gte?: InputMaybe<Scalars['Int']['input']>;
+  dv_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dv_lt?: InputMaybe<Scalars['Int']['input']>;
+  dv_lte?: InputMaybe<Scalars['Int']['input']>;
+  dv_not?: InputMaybe<Scalars['Int']['input']>;
+  dv_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  environment?: InputMaybe<Scalars['String']['input']>;
+  environment_contains?: InputMaybe<Scalars['String']['input']>;
+  environment_contains_i?: InputMaybe<Scalars['String']['input']>;
+  environment_ends_with?: InputMaybe<Scalars['String']['input']>;
+  environment_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  environment_i?: InputMaybe<Scalars['String']['input']>;
+  environment_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  environment_not?: InputMaybe<Scalars['String']['input']>;
+  environment_not_contains?: InputMaybe<Scalars['String']['input']>;
+  environment_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  environment_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  environment_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  environment_not_i?: InputMaybe<Scalars['String']['input']>;
+  environment_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  environment_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  environment_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  environment_starts_with?: InputMaybe<Scalars['String']['input']>;
+  environment_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  history_action?: InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>;
+  history_action_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>>>;
+  history_action_not?: InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>;
+  history_action_not_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialHistoryRecordHistoryActionType>>>;
+  history_date?: InputMaybe<Scalars['String']['input']>;
+  history_date_gt?: InputMaybe<Scalars['String']['input']>;
+  history_date_gte?: InputMaybe<Scalars['String']['input']>;
+  history_date_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  history_date_lt?: InputMaybe<Scalars['String']['input']>;
+  history_date_lte?: InputMaybe<Scalars['String']['input']>;
+  history_date_not?: InputMaybe<Scalars['String']['input']>;
+  history_date_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  history_id?: InputMaybe<Scalars['String']['input']>;
+  history_id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  history_id_not?: InputMaybe<Scalars['String']['input']>;
+  history_id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  initiationEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  metadata_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  metadata_not?: InputMaybe<Scalars['JSON']['input']>;
+  metadata_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  newId?: InputMaybe<Scalars['JSON']['input']>;
+  newId_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  newId_not?: InputMaybe<Scalars['JSON']['input']>;
+  newId_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  organization?: InputMaybe<Scalars['String']['input']>;
+  organization_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organization_not?: InputMaybe<Scalars['String']['input']>;
+  organization_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  provider?: InputMaybe<Scalars['String']['input']>;
+  provider_contains?: InputMaybe<Scalars['String']['input']>;
+  provider_contains_i?: InputMaybe<Scalars['String']['input']>;
+  provider_ends_with?: InputMaybe<Scalars['String']['input']>;
+  provider_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  provider_i?: InputMaybe<Scalars['String']['input']>;
+  provider_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  provider_not?: InputMaybe<Scalars['String']['input']>;
+  provider_not_contains?: InputMaybe<Scalars['String']['input']>;
+  provider_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  provider_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  provider_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  provider_not_i?: InputMaybe<Scalars['String']['input']>;
+  provider_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  provider_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  provider_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  provider_starts_with?: InputMaybe<Scalars['String']['input']>;
+  provider_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  publicKey_contains?: InputMaybe<Scalars['String']['input']>;
+  publicKey_contains_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_ends_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  publicKey_not?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_contains?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  publicKey_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_starts_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['JSON']['input']>;
+  secretKey_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  secretKey_not?: InputMaybe<Scalars['JSON']['input']>;
+  secretKey_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  sender?: InputMaybe<Scalars['JSON']['input']>;
+  sender_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  sender_not?: InputMaybe<Scalars['JSON']['input']>;
+  sender_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_gt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_gte?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  updatedAt_lt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_lte?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_not?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  updatedBy?: InputMaybe<Scalars['String']['input']>;
+  updatedBy_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  updatedBy_not?: InputMaybe<Scalars['String']['input']>;
+  updatedBy_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  v_gt?: InputMaybe<Scalars['Int']['input']>;
+  v_gte?: InputMaybe<Scalars['Int']['input']>;
+  v_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  v_lt?: InputMaybe<Scalars['Int']['input']>;
+  v_lte?: InputMaybe<Scalars['Int']['input']>;
+  v_not?: InputMaybe<Scalars['Int']['input']>;
+  v_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  verificationEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['JSON']['input']>;
+  webhookSecret_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  webhookSecret_not?: InputMaybe<Scalars['JSON']['input']>;
+  webhookSecret_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+};
+
+export type PaymentProviderCredentialHistoryRecordWhereUniqueInput = {
+  id: Scalars['ID']['input'];
+};
+
+export type PaymentProviderCredentialHistoryRecordsCreateInput = {
+  data?: InputMaybe<PaymentProviderCredentialHistoryRecordCreateInput>;
+};
+
+export type PaymentProviderCredentialHistoryRecordsUpdateInput = {
+  data?: InputMaybe<PaymentProviderCredentialHistoryRecordUpdateInput>;
+  id: Scalars['ID']['input'];
+};
+
+export enum PaymentProviderCredentialProviderType {
+  Paystack = 'paystack'
+}
+
+export type PaymentProviderCredentialUpdateInput = {
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<UserRelateToOneInput>;
+  currency?: InputMaybe<PaymentProviderCredentialCurrencyType>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  environment?: InputMaybe<PaymentProviderCredentialEnvironmentType>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  newId?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<OrganizationRelateToOneInput>;
+  provider?: InputMaybe<PaymentProviderCredentialProviderType>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['String']['input']>;
+  sender?: InputMaybe<SenderFieldInput>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedBy?: InputMaybe<UserRelateToOneInput>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type PaymentProviderCredentialWhereInput = {
+  AND?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialWhereInput>>>;
+  OR?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialWhereInput>>>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_gt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_gte?: InputMaybe<Scalars['String']['input']>;
+  createdAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  createdAt_lt?: InputMaybe<Scalars['String']['input']>;
+  createdAt_lte?: InputMaybe<Scalars['String']['input']>;
+  createdAt_not?: InputMaybe<Scalars['String']['input']>;
+  createdAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  createdBy?: InputMaybe<UserWhereInput>;
+  createdBy_is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  currency?: InputMaybe<PaymentProviderCredentialCurrencyType>;
+  currency_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialCurrencyType>>>;
+  currency_not?: InputMaybe<PaymentProviderCredentialCurrencyType>;
+  currency_not_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialCurrencyType>>>;
+  deletedAt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_gt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_gte?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  deletedAt_lt?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_lte?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_not?: InputMaybe<Scalars['String']['input']>;
+  deletedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  dv?: InputMaybe<Scalars['Int']['input']>;
+  dv_gt?: InputMaybe<Scalars['Int']['input']>;
+  dv_gte?: InputMaybe<Scalars['Int']['input']>;
+  dv_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dv_lt?: InputMaybe<Scalars['Int']['input']>;
+  dv_lte?: InputMaybe<Scalars['Int']['input']>;
+  dv_not?: InputMaybe<Scalars['Int']['input']>;
+  dv_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  environment?: InputMaybe<PaymentProviderCredentialEnvironmentType>;
+  environment_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialEnvironmentType>>>;
+  environment_not?: InputMaybe<PaymentProviderCredentialEnvironmentType>;
+  environment_not_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialEnvironmentType>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  initiationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  initiationEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  metadata_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  metadata_not?: InputMaybe<Scalars['JSON']['input']>;
+  metadata_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  newId?: InputMaybe<Scalars['String']['input']>;
+  newId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  newId_not?: InputMaybe<Scalars['String']['input']>;
+  newId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organization?: InputMaybe<OrganizationWhereInput>;
+  organization_is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  provider?: InputMaybe<PaymentProviderCredentialProviderType>;
+  provider_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialProviderType>>>;
+  provider_not?: InputMaybe<PaymentProviderCredentialProviderType>;
+  provider_not_in?: InputMaybe<Array<InputMaybe<PaymentProviderCredentialProviderType>>>;
+  publicKey?: InputMaybe<Scalars['String']['input']>;
+  publicKey_contains?: InputMaybe<Scalars['String']['input']>;
+  publicKey_contains_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_ends_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  publicKey_not?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_contains?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  publicKey_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  publicKey_starts_with?: InputMaybe<Scalars['String']['input']>;
+  publicKey_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey?: InputMaybe<Scalars['String']['input']>;
+  secretKey_contains?: InputMaybe<Scalars['String']['input']>;
+  secretKey_contains_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_ends_with?: InputMaybe<Scalars['String']['input']>;
+  secretKey_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  secretKey_not?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_contains?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  secretKey_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  secretKey_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  secretKey_starts_with?: InputMaybe<Scalars['String']['input']>;
+  secretKey_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  sender?: InputMaybe<SenderFieldInput>;
+  sender_in?: InputMaybe<Array<InputMaybe<SenderFieldInput>>>;
+  sender_not?: InputMaybe<SenderFieldInput>;
+  sender_not_in?: InputMaybe<Array<InputMaybe<SenderFieldInput>>>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_gt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_gte?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  updatedAt_lt?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_lte?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_not?: InputMaybe<Scalars['String']['input']>;
+  updatedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  updatedBy?: InputMaybe<UserWhereInput>;
+  updatedBy_is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  v?: InputMaybe<Scalars['Int']['input']>;
+  v_gt?: InputMaybe<Scalars['Int']['input']>;
+  v_gte?: InputMaybe<Scalars['Int']['input']>;
+  v_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  v_lt?: InputMaybe<Scalars['Int']['input']>;
+  v_lte?: InputMaybe<Scalars['Int']['input']>;
+  v_not?: InputMaybe<Scalars['Int']['input']>;
+  v_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  verificationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  verificationEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookEnabled_not?: InputMaybe<Scalars['Boolean']['input']>;
+  webhookSecret?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_contains?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_contains_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_ends_with?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  webhookSecret_not?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_contains?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  webhookSecret_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_starts_with?: InputMaybe<Scalars['String']['input']>;
+  webhookSecret_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type PaymentProviderCredentialWhereUniqueInput = {
+  id: Scalars['ID']['input'];
+};
+
+export type PaymentProviderCredentialsCreateInput = {
+  data?: InputMaybe<PaymentProviderCredentialCreateInput>;
+};
+
+export type PaymentProviderCredentialsUpdateInput = {
+  data?: InputMaybe<PaymentProviderCredentialUpdateInput>;
+  id: Scalars['ID']['input'];
+};
 
 export enum PaymentProviderType {
   Flutterwave = 'flutterwave',
@@ -75540,6 +76575,9 @@ export type PaymentUpdateInput = {
   posReceiptUrl?: InputMaybe<Scalars['String']['input']>;
   property?: InputMaybe<PropertyRelateToOneInput>;
   provider?: InputMaybe<PaymentProviderType>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
   purpose?: InputMaybe<Scalars['String']['input']>;
   rawAddress?: InputMaybe<Scalars['String']['input']>;
   receipt?: InputMaybe<BillingReceiptRelateToOneInput>;
@@ -75801,6 +76839,46 @@ export type PaymentWhereInput = {
   property?: InputMaybe<PropertyWhereInput>;
   property_is_null?: InputMaybe<Scalars['Boolean']['input']>;
   provider?: InputMaybe<PaymentProviderType>;
+  providerEnvironment?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_contains?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerEnvironment_not?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_contains?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerEnvironment_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerEnvironment_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerInitResponse?: InputMaybe<Scalars['JSON']['input']>;
+  providerInitResponse_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  providerInitResponse_not?: InputMaybe<Scalars['JSON']['input']>;
+  providerInitResponse_not_in?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
+  providerReference?: InputMaybe<Scalars['String']['input']>;
+  providerReference_contains?: InputMaybe<Scalars['String']['input']>;
+  providerReference_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerReference_not?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_contains?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_contains_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_ends_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  providerReference_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_not_starts_with_i?: InputMaybe<Scalars['String']['input']>;
+  providerReference_starts_with?: InputMaybe<Scalars['String']['input']>;
+  providerReference_starts_with_i?: InputMaybe<Scalars['String']['input']>;
   provider_in?: InputMaybe<Array<InputMaybe<PaymentProviderType>>>;
   provider_not?: InputMaybe<PaymentProviderType>;
   provider_not_in?: InputMaybe<Array<InputMaybe<PaymentProviderType>>>;
@@ -80523,6 +81601,10 @@ export type Query = {
   PaymentAllocationHistoryRecord?: Maybe<PaymentAllocationHistoryRecord>;
   /**  Search for the PaymentHistoryRecord item with the matching ID.  */
   PaymentHistoryRecord?: Maybe<PaymentHistoryRecord>;
+  /**  Search for the PaymentProviderCredential item with the matching ID.  */
+  PaymentProviderCredential?: Maybe<PaymentProviderCredential>;
+  /**  Search for the PaymentProviderCredentialHistoryRecord item with the matching ID.  */
+  PaymentProviderCredentialHistoryRecord?: Maybe<PaymentProviderCredentialHistoryRecord>;
   /**  Search for the PaymentReceipt item with the matching ID.  */
   PaymentReceipt?: Maybe<PaymentReceipt>;
   /**  Search for the PaymentReceiptHistoryRecord item with the matching ID.  */
@@ -81155,6 +82237,10 @@ export type Query = {
   _PaymentAllocationsMeta?: Maybe<_ListMeta>;
   /**  Retrieve the meta-data for the PaymentHistoryRecord list.  */
   _PaymentHistoryRecordsMeta?: Maybe<_ListMeta>;
+  /**  Retrieve the meta-data for the PaymentProviderCredentialHistoryRecord list.  */
+  _PaymentProviderCredentialHistoryRecordsMeta?: Maybe<_ListMeta>;
+  /**  Retrieve the meta-data for the PaymentProviderCredential list.  */
+  _PaymentProviderCredentialsMeta?: Maybe<_ListMeta>;
   /**  Retrieve the meta-data for the PaymentReceiptHistoryRecord list.  */
   _PaymentReceiptHistoryRecordsMeta?: Maybe<_ListMeta>;
   /**  Retrieve the meta-data for the PaymentReceipt list.  */
@@ -81811,6 +82897,10 @@ export type Query = {
   _allPaymentAllocationsMeta?: Maybe<_QueryMeta>;
   /**  Perform a meta-query on all PaymentHistoryRecord items which match the where clause.  */
   _allPaymentHistoryRecordsMeta?: Maybe<_QueryMeta>;
+  /**  Perform a meta-query on all PaymentProviderCredentialHistoryRecord items which match the where clause.  */
+  _allPaymentProviderCredentialHistoryRecordsMeta?: Maybe<_QueryMeta>;
+  /**  Perform a meta-query on all PaymentProviderCredential items which match the where clause.  */
+  _allPaymentProviderCredentialsMeta?: Maybe<_QueryMeta>;
   /**  Perform a meta-query on all PaymentReceiptHistoryRecord items which match the where clause.  */
   _allPaymentReceiptHistoryRecordsMeta?: Maybe<_QueryMeta>;
   /**  Perform a meta-query on all PaymentReceipt items which match the where clause.  */
@@ -82476,6 +83566,10 @@ export type Query = {
   allPaymentAllocations?: Maybe<Array<Maybe<PaymentAllocation>>>;
   /**  Search for all PaymentHistoryRecord items which match the where clause.  */
   allPaymentHistoryRecords?: Maybe<Array<Maybe<PaymentHistoryRecord>>>;
+  /**  Search for all PaymentProviderCredentialHistoryRecord items which match the where clause.  */
+  allPaymentProviderCredentialHistoryRecords?: Maybe<Array<Maybe<PaymentProviderCredentialHistoryRecord>>>;
+  /**  Search for all PaymentProviderCredential items which match the where clause.  */
+  allPaymentProviderCredentials?: Maybe<Array<Maybe<PaymentProviderCredential>>>;
   /**  Search for all PaymentReceiptHistoryRecord items which match the where clause.  */
   allPaymentReceiptHistoryRecords?: Maybe<Array<Maybe<PaymentReceiptHistoryRecord>>>;
   /**  Search for all PaymentReceipt items which match the where clause.  */
@@ -82941,6 +84035,7 @@ export type Query = {
    */
   getPhoneByConfirmPhoneActionToken?: Maybe<GetPhoneByConfirmPhoneActionTokenOutput>;
   getResidentExistenceByPhoneAndAddress?: Maybe<GetResidentExistenceByPhoneAndAddressOutput>;
+  getTenantStatement?: Maybe<TenantStatementOutput>;
   occupiedRentalUnits?: Maybe<RentalOccupancyListOutput>;
   organizationRentArrearsSummary?: Maybe<OrganizationRentArrearsSummary>;
   overdueRentalResidents?: Maybe<RentalArrearsResidentsOutput>;
@@ -84029,6 +85124,16 @@ export type QueryPaymentAllocationHistoryRecordArgs = {
 
 export type QueryPaymentHistoryRecordArgs = {
   where: PaymentHistoryRecordWhereUniqueInput;
+};
+
+
+export type QueryPaymentProviderCredentialArgs = {
+  where: PaymentProviderCredentialWhereUniqueInput;
+};
+
+
+export type QueryPaymentProviderCredentialHistoryRecordArgs = {
+  where: PaymentProviderCredentialHistoryRecordWhereUniqueInput;
 };
 
 
@@ -86654,6 +87759,26 @@ export type Query_AllPaymentHistoryRecordsMetaArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   sortBy?: InputMaybe<Array<SortPaymentHistoryRecordsBy>>;
   where?: InputMaybe<PaymentHistoryRecordWhereInput>;
+};
+
+
+export type Query_AllPaymentProviderCredentialHistoryRecordsMetaArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<Array<SortPaymentProviderCredentialHistoryRecordsBy>>;
+  where?: InputMaybe<PaymentProviderCredentialHistoryRecordWhereInput>;
+};
+
+
+export type Query_AllPaymentProviderCredentialsMetaArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<Array<SortPaymentProviderCredentialsBy>>;
+  where?: InputMaybe<PaymentProviderCredentialWhereInput>;
 };
 
 
@@ -89842,6 +90967,26 @@ export type QueryAllPaymentHistoryRecordsArgs = {
 };
 
 
+export type QueryAllPaymentProviderCredentialHistoryRecordsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<Array<SortPaymentProviderCredentialHistoryRecordsBy>>;
+  where?: InputMaybe<PaymentProviderCredentialHistoryRecordWhereInput>;
+};
+
+
+export type QueryAllPaymentProviderCredentialsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<Array<SortPaymentProviderCredentialsBy>>;
+  where?: InputMaybe<PaymentProviderCredentialWhereInput>;
+};
+
+
 export type QueryAllPaymentReceiptHistoryRecordsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Scalars['String']['input']>;
@@ -91060,6 +92205,11 @@ export type QueryGetPhoneByConfirmPhoneActionTokenArgs = {
 
 export type QueryGetResidentExistenceByPhoneAndAddressArgs = {
   data: GetResidentExistenceByPhoneAndAddressInput;
+};
+
+
+export type QueryGetTenantStatementArgs = {
+  data: GetTenantStatementInput;
 };
 
 
@@ -103363,6 +104513,8 @@ export enum SortOrganizationEmployeeRoleHistoryRecordsBy {
   CanManagePropertiesDesc = 'canManageProperties_DESC',
   CanManagePropertyScopesAsc = 'canManagePropertyScopes_ASC',
   CanManagePropertyScopesDesc = 'canManagePropertyScopes_DESC',
+  CanManageResidentsAsc = 'canManageResidents_ASC',
+  CanManageResidentsDesc = 'canManageResidents_DESC',
   CanManageRolesAsc = 'canManageRoles_ASC',
   CanManageRolesDesc = 'canManageRoles_DESC',
   CanManageSubscriptionsAsc = 'canManageSubscriptions_ASC',
@@ -103415,6 +104567,8 @@ export enum SortOrganizationEmployeeRoleHistoryRecordsBy {
   CanReadPaymentsDesc = 'canReadPayments_DESC',
   CanReadPropertiesAsc = 'canReadProperties_ASC',
   CanReadPropertiesDesc = 'canReadProperties_DESC',
+  CanReadResidentsAsc = 'canReadResidents_ASC',
+  CanReadResidentsDesc = 'canReadResidents_DESC',
   CanReadServicesAsc = 'canReadServices_ASC',
   CanReadServicesDesc = 'canReadServices_DESC',
   CanReadSettingsAsc = 'canReadSettings_ASC',
@@ -103522,6 +104676,8 @@ export enum SortOrganizationEmployeeRolesBy {
   CanManagePropertiesDesc = 'canManageProperties_DESC',
   CanManagePropertyScopesAsc = 'canManagePropertyScopes_ASC',
   CanManagePropertyScopesDesc = 'canManagePropertyScopes_DESC',
+  CanManageResidentsAsc = 'canManageResidents_ASC',
+  CanManageResidentsDesc = 'canManageResidents_DESC',
   CanManageRolesAsc = 'canManageRoles_ASC',
   CanManageRolesDesc = 'canManageRoles_DESC',
   CanManageSubscriptionsAsc = 'canManageSubscriptions_ASC',
@@ -103574,6 +104730,8 @@ export enum SortOrganizationEmployeeRolesBy {
   CanReadPaymentsDesc = 'canReadPayments_DESC',
   CanReadPropertiesAsc = 'canReadProperties_ASC',
   CanReadPropertiesDesc = 'canReadProperties_DESC',
+  CanReadResidentsAsc = 'canReadResidents_ASC',
+  CanReadResidentsDesc = 'canReadResidents_DESC',
   CanReadServicesAsc = 'canReadServices_ASC',
   CanReadServicesDesc = 'canReadServices_DESC',
   CanReadSettingsAsc = 'canReadSettings_ASC',
@@ -103948,6 +105106,10 @@ export enum SortPaymentHistoryRecordsBy {
   PeriodDesc = 'period_DESC',
   PosReceiptUrlAsc = 'posReceiptUrl_ASC',
   PosReceiptUrlDesc = 'posReceiptUrl_DESC',
+  ProviderEnvironmentAsc = 'providerEnvironment_ASC',
+  ProviderEnvironmentDesc = 'providerEnvironment_DESC',
+  ProviderReferenceAsc = 'providerReference_ASC',
+  ProviderReferenceDesc = 'providerReference_DESC',
   ProviderAsc = 'provider_ASC',
   ProviderDesc = 'provider_DESC',
   PurposeAsc = 'purpose_ASC',
@@ -103972,6 +105134,82 @@ export enum SortPaymentHistoryRecordsBy {
   UpdatedAtDesc = 'updatedAt_DESC',
   VAsc = 'v_ASC',
   VDesc = 'v_DESC'
+}
+
+export enum SortPaymentProviderCredentialHistoryRecordsBy {
+  CreatedAtAsc = 'createdAt_ASC',
+  CreatedAtDesc = 'createdAt_DESC',
+  CurrencyAsc = 'currency_ASC',
+  CurrencyDesc = 'currency_DESC',
+  DeletedAtAsc = 'deletedAt_ASC',
+  DeletedAtDesc = 'deletedAt_DESC',
+  DvAsc = 'dv_ASC',
+  DvDesc = 'dv_DESC',
+  EnvironmentAsc = 'environment_ASC',
+  EnvironmentDesc = 'environment_DESC',
+  HistoryActionAsc = 'history_action_ASC',
+  HistoryActionDesc = 'history_action_DESC',
+  HistoryDateAsc = 'history_date_ASC',
+  HistoryDateDesc = 'history_date_DESC',
+  IdAsc = 'id_ASC',
+  IdDesc = 'id_DESC',
+  InitiationEnabledAsc = 'initiationEnabled_ASC',
+  InitiationEnabledDesc = 'initiationEnabled_DESC',
+  IsEnabledAsc = 'isEnabled_ASC',
+  IsEnabledDesc = 'isEnabled_DESC',
+  ProviderAsc = 'provider_ASC',
+  ProviderDesc = 'provider_DESC',
+  PublicKeyAsc = 'publicKey_ASC',
+  PublicKeyDesc = 'publicKey_DESC',
+  UpdatedAtAsc = 'updatedAt_ASC',
+  UpdatedAtDesc = 'updatedAt_DESC',
+  VAsc = 'v_ASC',
+  VDesc = 'v_DESC',
+  VerificationEnabledAsc = 'verificationEnabled_ASC',
+  VerificationEnabledDesc = 'verificationEnabled_DESC',
+  WebhookEnabledAsc = 'webhookEnabled_ASC',
+  WebhookEnabledDesc = 'webhookEnabled_DESC'
+}
+
+export enum SortPaymentProviderCredentialsBy {
+  CreatedAtAsc = 'createdAt_ASC',
+  CreatedAtDesc = 'createdAt_DESC',
+  CreatedByAsc = 'createdBy_ASC',
+  CreatedByDesc = 'createdBy_DESC',
+  CurrencyAsc = 'currency_ASC',
+  CurrencyDesc = 'currency_DESC',
+  DeletedAtAsc = 'deletedAt_ASC',
+  DeletedAtDesc = 'deletedAt_DESC',
+  DvAsc = 'dv_ASC',
+  DvDesc = 'dv_DESC',
+  EnvironmentAsc = 'environment_ASC',
+  EnvironmentDesc = 'environment_DESC',
+  IdAsc = 'id_ASC',
+  IdDesc = 'id_DESC',
+  InitiationEnabledAsc = 'initiationEnabled_ASC',
+  InitiationEnabledDesc = 'initiationEnabled_DESC',
+  IsEnabledAsc = 'isEnabled_ASC',
+  IsEnabledDesc = 'isEnabled_DESC',
+  OrganizationAsc = 'organization_ASC',
+  OrganizationDesc = 'organization_DESC',
+  ProviderAsc = 'provider_ASC',
+  ProviderDesc = 'provider_DESC',
+  PublicKeyAsc = 'publicKey_ASC',
+  PublicKeyDesc = 'publicKey_DESC',
+  SecretKeyAsc = 'secretKey_ASC',
+  SecretKeyDesc = 'secretKey_DESC',
+  UpdatedAtAsc = 'updatedAt_ASC',
+  UpdatedAtDesc = 'updatedAt_DESC',
+  UpdatedByAsc = 'updatedBy_ASC',
+  UpdatedByDesc = 'updatedBy_DESC',
+  VAsc = 'v_ASC',
+  VDesc = 'v_DESC',
+  VerificationEnabledAsc = 'verificationEnabled_ASC',
+  VerificationEnabledDesc = 'verificationEnabled_DESC',
+  WebhookEnabledAsc = 'webhookEnabled_ASC',
+  WebhookEnabledDesc = 'webhookEnabled_DESC',
+  WebhookSecretAsc = 'webhookSecret_ASC',
+  WebhookSecretDesc = 'webhookSecret_DESC'
 }
 
 export enum SortPaymentReceiptHistoryRecordsBy {
@@ -104175,6 +105413,10 @@ export enum SortPaymentsBy {
   PosReceiptUrlDesc = 'posReceiptUrl_DESC',
   PropertyAsc = 'property_ASC',
   PropertyDesc = 'property_DESC',
+  ProviderEnvironmentAsc = 'providerEnvironment_ASC',
+  ProviderEnvironmentDesc = 'providerEnvironment_DESC',
+  ProviderReferenceAsc = 'providerReference_ASC',
+  ProviderReferenceDesc = 'providerReference_DESC',
   ProviderAsc = 'provider_ASC',
   ProviderDesc = 'provider_DESC',
   PurposeAsc = 'purpose_ASC',
@@ -110694,6 +111936,60 @@ export type TenantLedgersCreateInput = {
 export type TenantLedgersUpdateInput = {
   data?: InputMaybe<TenantLedgerUpdateInput>;
   id: Scalars['ID']['input'];
+};
+
+export type TenantStatementHeader = {
+  __typename?: 'TenantStatementHeader';
+  currencyCode: Scalars['String']['output'];
+  occupancyId?: Maybe<Scalars['ID']['output']>;
+  occupancyStatus?: Maybe<Scalars['String']['output']>;
+  propertyId?: Maybe<Scalars['ID']['output']>;
+  propertyName?: Maybe<Scalars['String']['output']>;
+  rentalUnitId?: Maybe<Scalars['ID']['output']>;
+  rentalUnitName?: Maybe<Scalars['String']['output']>;
+  statementPeriodEnd?: Maybe<Scalars['String']['output']>;
+  statementPeriodStart?: Maybe<Scalars['String']['output']>;
+  tenantEmail?: Maybe<Scalars['String']['output']>;
+  tenantId: Scalars['ID']['output'];
+  tenantName: Scalars['String']['output'];
+  tenantPhone?: Maybe<Scalars['String']['output']>;
+};
+
+export type TenantStatementOutput = {
+  __typename?: 'TenantStatementOutput';
+  header: TenantStatementHeader;
+  rows: Array<TenantStatementRow>;
+  summary: TenantStatementSummary;
+};
+
+export type TenantStatementRow = {
+  __typename?: 'TenantStatementRow';
+  credit?: Maybe<Scalars['String']['output']>;
+  date: Scalars['String']['output'];
+  debit?: Maybe<Scalars['String']['output']>;
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  linkedEntityId?: Maybe<Scalars['ID']['output']>;
+  linkedEntityType?: Maybe<Scalars['String']['output']>;
+  occupancyId?: Maybe<Scalars['ID']['output']>;
+  propertyId?: Maybe<Scalars['ID']['output']>;
+  reference?: Maybe<Scalars['String']['output']>;
+  rentalUnitId?: Maybe<Scalars['ID']['output']>;
+  runningBalance?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+};
+
+export type TenantStatementSummary = {
+  __typename?: 'TenantStatementSummary';
+  closingBalance: Scalars['String']['output'];
+  openingBalance: Scalars['String']['output'];
+  outstandingBalance: Scalars['String']['output'];
+  runningBalanceAvailable: Scalars['Boolean']['output'];
+  totalCharges: Scalars['String']['output'];
+  totalCreditsAdjustments: Scalars['String']['output'];
+  totalPayments: Scalars['String']['output'];
+  totalReversals: Scalars['String']['output'];
 };
 
 /**  Users request or contact with the user. It has fields `clientName`, `clientPhone`, `clientEmail`, which stores contact information at the moment of creating or updating. Values of these fields are independent from related entities, like Contact, Resident etc. If by some reason related entities will be deleted, unavailable or will change its contact information, these fields will stay unchanged.So, by creating a new ticket with connection to some contact entity (Contact, Resident), these fields will be populated by its contact information if other values are not explicitly provided.  */
@@ -125695,6 +126991,32 @@ export type ValidateQrCodeReceiptCategoryOutput = {
   __typename?: 'ValidateQRCodeReceiptCategoryOutput';
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+};
+
+export type VerifyPendingPaymentInput = {
+  confirmedAt?: InputMaybe<Scalars['String']['input']>;
+  context?: InputMaybe<Scalars['JSON']['input']>;
+  dv: Scalars['Int']['input'];
+  organization?: InputMaybe<OrganizationWhereUniqueInput>;
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
+  paymentId?: InputMaybe<Scalars['ID']['input']>;
+  paymentMethod?: InputMaybe<Scalars['String']['input']>;
+  providerCode: Scalars['String']['input'];
+  providerReference?: InputMaybe<Scalars['String']['input']>;
+  sender: SenderFieldInput;
+};
+
+export type VerifyPendingPaymentOutput = {
+  __typename?: 'VerifyPendingPaymentOutput';
+  actionTaken?: Maybe<Scalars['String']['output']>;
+  amount?: Maybe<Scalars['String']['output']>;
+  authorizationUrl?: Maybe<Scalars['String']['output']>;
+  currency?: Maybe<Scalars['String']['output']>;
+  paymentId?: Maybe<Scalars['ID']['output']>;
+  paymentUrl?: Maybe<Scalars['String']['output']>;
+  provider?: Maybe<Scalars['String']['output']>;
+  providerReference?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
 };
 
 export type VerifyUserEmailInput = {

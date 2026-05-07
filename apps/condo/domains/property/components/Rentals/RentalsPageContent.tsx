@@ -27,6 +27,10 @@ const RENTAL_UNIT_FIELDS = `
     property { id address addressKey }
 `
 
+const RENTAL_UNIT_MUTATION_FIELDS = `
+    id
+`
+
 const OCCUPANCY_FIELDS = `
     id
     status
@@ -106,13 +110,13 @@ const GET_RENTAL_WORKSPACE_QUERY = gql`
 
 const CREATE_RENTAL_UNIT_MUTATION = gql`
     mutation createRentalUnitFromWorkspace ($data: RentalUnitCreateInput) {
-        obj: createRentalUnit(data: $data) { ${RENTAL_UNIT_FIELDS} }
+        obj: createRentalUnit(data: $data) { ${RENTAL_UNIT_MUTATION_FIELDS} }
     }
 `
 
 const UPDATE_RENTAL_UNIT_MUTATION = gql`
     mutation updateRentalUnitFromWorkspace ($id: ID!, $data: RentalUnitUpdateInput) {
-        obj: updateRentalUnit(id: $id, data: $data) { ${RENTAL_UNIT_FIELDS} }
+        obj: updateRentalUnit(id: $id, data: $data) { ${RENTAL_UNIT_MUTATION_FIELDS} }
     }
 `
 
@@ -303,7 +307,6 @@ export const RentalsPageContent: React.FC<RentalsPageContentProps> = ({ property
                 variables: {
                     data: {
                         ...data,
-                        organization: { connect: { id: organizationId } },
                         property: { connect: { id: property.id } },
                     },
                 },
@@ -312,7 +315,7 @@ export const RentalsPageContent: React.FC<RentalsPageContentProps> = ({ property
 
         setUnitModal(null)
         await refetchWorkspace()
-    }, [canManageProperties, createRentalUnit, organizationId, property.id, refetchWorkspace, unitForm, unitModal, updateRentalUnit])
+    }, [canManageProperties, createRentalUnit, property.id, refetchWorkspace, unitForm, unitModal, updateRentalUnit])
 
     const handleLifecycleSubmit = useCallback(async () => {
         if (!canManageProperties) return

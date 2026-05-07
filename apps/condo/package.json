@@ -6,7 +6,7 @@
     "test": "mkdirp dist/admin && cross-env NODE_OPTIONS=--experimental-vm-modules jest --unhandled-rejections=strict",
     "paystack:verify:smoke": "node ./bin/verify-paystack-payment.js",
     "prepare": "node ./bin/prepare.js",
-    "dev": "yarn build:deps && cross-env NODE_OPTIONS=\"--max_old_space_size=6144\" NODE_ENV=development node --trace-warnings ./../../bin/run-keystone-app.js & yarn types:watch",
+    "dev": "yarn build:deps && bash -c 'trap \"kill 0\" EXIT INT TERM; cross-env NODE_OPTIONS=\"--max_old_space_size=12288\" NODE_ENV=development node --trace-warnings ./../../bin/run-keystone-app.js & yarn types:watch & wait -n'",
     "debug": "node inspect node_modules/.bin/keystone dev",
     "build:static": "yarn workspace @open-condo/ui build:sb -o ../../apps/condo/public/ui && mv -f public/ui/ui/* public/ui",
     "build:deps": "node ../../node_modules/turbo/bin/turbo build --filter=@app/condo^...",

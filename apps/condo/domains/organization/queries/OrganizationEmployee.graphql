@@ -124,6 +124,8 @@ query getActiveOrganizationEmployee($userId: ID!, $employeeId: ID) {
             canManageMarketSetting
             canManageTicketAutoAssignments
             canManageSubscriptions
+            canReadResidents
+            canManageResidents
         }
     }
 }

@@ -1,8 +1,10 @@
 const get = require('lodash/get')
+const isEmpty = require('lodash/isEmpty')
+const isNull = require('lodash/isNil')
 const uniq = require('lodash/uniq')
 
 const { throwAuthenticationError } = require('@open-condo/keystone/apolloErrorFormatter')
-const { find, getById } = require('@open-condo/keystone/schema')
+const { find, getByCondition, getById } = require('@open-condo/keystone/schema')
 
 const {
     checkPermissionsInEmployedOrganizations,
@@ -59,12 +61,41 @@ async function canManageRentalUnits ({ authentication: { item: user }, originalI
 
     if (operation === 'create') {
         if (isBulkRequest) {
-            organizationIds = originalInput.map(el => get(el, ['data', 'organization', 'connect', 'id']))
+            const orgIds = uniq(originalInput.map((item) => get(item, ['data', 'organization', 'connect', 'id'])).filter(Boolean))
+            const propertyIds = uniq(originalInput.map((item) => get(item, ['data', 'property', 'connect', 'id'])).filter(Boolean))
 
-            if (organizationIds.filter(Boolean).length !== originalInput.length) return false
-            organizationIds = uniq(organizationIds)
+            let organizationIdsFromProperties = []
+            if (propertyIds.length) {
+                const properties = await find('Property', {
+                    id_in: propertyIds,
+                    deletedAt: null,
+                })
+
+                if (properties.length !== propertyIds.length) return false
+
+                organizationIdsFromProperties = uniq(properties.map(property => get(property, 'organization', null)))
+                if (organizationIdsFromProperties.some(isNull)) return false
+            }
+
+            organizationIds = uniq([...orgIds, ...organizationIdsFromProperties])
         } else {
-            const organizationId = get(originalInput, ['organization', 'connect', 'id'])
+            let organizationId = get(originalInput, ['organization', 'connect', 'id'])
+
+            if (!organizationId) {
+                const propertyId = get(originalInput, ['property', 'connect', 'id'])
+
+                if (propertyId) {
+                    const property = await getByCondition('Property', {
+                        id: propertyId,
+                        deletedAt: null,
+                    })
+
+                    if (!property || !property.organization) return false
+
+                    organizationId = property.organization
+                }
+            }
+
             if (!organizationId) return false
             organizationIds = [organizationId]
         }
@@ -84,6 +115,8 @@ async function canManageRentalUnits ({ authentication: { item: user }, originalI
         if (!item || !item.organization) return false
         organizationIds = [item.organization]
     }
+
+    if (isEmpty(organizationIds) || organizationIds.some(isNull)) return false
 
     return await checkPermissionsInEmployedOrganizations(context, user, organizationIds, 'canManageProperties')
 }

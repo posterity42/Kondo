@@ -334,6 +334,8 @@ const OrganizationEmployeeRole = new GQLListSchema('OrganizationEmployeeRole', {
         canManageTicketAutoAssignments: { type: 'Checkbox', defaultValue: false },
         canManageOrganizationEmployeeRequests: { type: 'Checkbox', defaultValue: false, kmigratorOptions: { default: false } },
         canManageSubscriptions: { type: 'Checkbox', defaultValue: false, kmigratorOptions: { default: false } },
+        canReadResidents: { type: 'Checkbox', defaultValue: true, kmigratorOptions: { default: true } },
+        canManageResidents: { type: 'Checkbox', defaultValue: false, kmigratorOptions: { default: false } },
     },
     plugins: [uuided(), versioned(), tracked(), dvAndSender(), historical(), softDeleted(), analytical()],
     hooks: {

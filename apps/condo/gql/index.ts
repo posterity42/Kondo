@@ -4045,6 +4045,8 @@ export const GetActiveOrganizationEmployeeDocument = gql`
       canManageMarketSetting
       canManageTicketAutoAssignments
       canManageSubscriptions
+      canReadResidents
+      canManageResidents
     }
   }
 }

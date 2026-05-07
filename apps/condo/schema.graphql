@@ -7719,6 +7719,8 @@ type OrganizationEmployeeRoleHistoryRecord {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   id: ID!
   v: Int
   createdAt: String
@@ -7929,6 +7931,10 @@ input OrganizationEmployeeRoleHistoryRecordWhereInput {
   canManageOrganizationEmployeeRequests_not: Boolean
   canManageSubscriptions: Boolean
   canManageSubscriptions_not: Boolean
+  canReadResidents: Boolean
+  canReadResidents_not: Boolean
+  canManageResidents: Boolean
+  canManageResidents_not: Boolean
   id: ID
   id_not: ID
   id_in: [ID]
@@ -8142,6 +8148,10 @@ enum SortOrganizationEmployeeRoleHistoryRecordsBy {
   canManageOrganizationEmployeeRequests_DESC
   canManageSubscriptions_ASC
   canManageSubscriptions_DESC
+  canReadResidents_ASC
+  canReadResidents_DESC
+  canManageResidents_ASC
+  canManageResidents_DESC
   id_ASC
   id_DESC
   v_ASC
@@ -8231,6 +8241,8 @@ input OrganizationEmployeeRoleHistoryRecordUpdateInput {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   v: Int
   createdAt: String
   updatedAt: String
@@ -8321,6 +8333,8 @@ input OrganizationEmployeeRoleHistoryRecordCreateInput {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   v: Int
   createdAt: String
   updatedAt: String
@@ -8459,6 +8473,8 @@ type OrganizationEmployeeRole {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   id: ID!
   v: Int
   createdAt: String
@@ -8663,6 +8679,10 @@ input OrganizationEmployeeRoleWhereInput {
   canManageOrganizationEmployeeRequests_not: Boolean
   canManageSubscriptions: Boolean
   canManageSubscriptions_not: Boolean
+  canReadResidents: Boolean
+  canReadResidents_not: Boolean
+  canManageResidents: Boolean
+  canManageResidents_not: Boolean
   id: ID
   id_not: ID
   id_in: [ID]
@@ -8870,6 +8890,10 @@ enum SortOrganizationEmployeeRolesBy {
   canManageOrganizationEmployeeRequests_DESC
   canManageSubscriptions_ASC
   canManageSubscriptions_DESC
+  canReadResidents_ASC
+  canReadResidents_DESC
+  canManageResidents_ASC
+  canManageResidents_DESC
   id_ASC
   id_DESC
   v_ASC
@@ -8961,6 +8985,8 @@ input OrganizationEmployeeRoleUpdateInput {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   v: Int
   createdAt: String
   updatedAt: String
@@ -9050,6 +9076,8 @@ input OrganizationEmployeeRoleCreateInput {
   canManageTicketAutoAssignments: Boolean
   canManageOrganizationEmployeeRequests: Boolean
   canManageSubscriptions: Boolean
+  canReadResidents: Boolean
+  canManageResidents: Boolean
   v: Int
   createdAt: String
   updatedAt: String
@@ -70699,6 +70727,9 @@ type PaymentHistoryRecord {
   paymentMethod: String
   provider: String
   externalTransactionId: String
+  providerReference: String
+  providerEnvironment: String
+  providerInitResponse: JSON
   confirmedAt: String
   reversalReason: String
   reversedAt: String
@@ -70944,6 +70975,46 @@ input PaymentHistoryRecordWhereInput {
   externalTransactionId_not_ends_with_i: String
   externalTransactionId_in: [String]
   externalTransactionId_not_in: [String]
+  providerReference: String
+  providerReference_not: String
+  providerReference_contains: String
+  providerReference_not_contains: String
+  providerReference_starts_with: String
+  providerReference_not_starts_with: String
+  providerReference_ends_with: String
+  providerReference_not_ends_with: String
+  providerReference_i: String
+  providerReference_not_i: String
+  providerReference_contains_i: String
+  providerReference_not_contains_i: String
+  providerReference_starts_with_i: String
+  providerReference_not_starts_with_i: String
+  providerReference_ends_with_i: String
+  providerReference_not_ends_with_i: String
+  providerReference_in: [String]
+  providerReference_not_in: [String]
+  providerEnvironment: String
+  providerEnvironment_not: String
+  providerEnvironment_contains: String
+  providerEnvironment_not_contains: String
+  providerEnvironment_starts_with: String
+  providerEnvironment_not_starts_with: String
+  providerEnvironment_ends_with: String
+  providerEnvironment_not_ends_with: String
+  providerEnvironment_i: String
+  providerEnvironment_not_i: String
+  providerEnvironment_contains_i: String
+  providerEnvironment_not_contains_i: String
+  providerEnvironment_starts_with_i: String
+  providerEnvironment_not_starts_with_i: String
+  providerEnvironment_ends_with_i: String
+  providerEnvironment_not_ends_with_i: String
+  providerEnvironment_in: [String]
+  providerEnvironment_not_in: [String]
+  providerInitResponse: JSON
+  providerInitResponse_not: JSON
+  providerInitResponse_in: [JSON]
+  providerInitResponse_not_in: [JSON]
   confirmedAt: String
   confirmedAt_not: String
   confirmedAt_lt: String
@@ -71253,6 +71324,10 @@ enum SortPaymentHistoryRecordsBy {
   provider_DESC
   externalTransactionId_ASC
   externalTransactionId_DESC
+  providerReference_ASC
+  providerReference_DESC
+  providerEnvironment_ASC
+  providerEnvironment_DESC
   confirmedAt_ASC
   confirmedAt_DESC
   reversalReason_ASC
@@ -71314,6 +71389,9 @@ input PaymentHistoryRecordUpdateInput {
   paymentMethod: String
   provider: String
   externalTransactionId: String
+  providerReference: String
+  providerEnvironment: String
+  providerInitResponse: JSON
   confirmedAt: String
   reversalReason: String
   reversedAt: String
@@ -71375,6 +71453,9 @@ input PaymentHistoryRecordCreateInput {
   paymentMethod: String
   provider: String
   externalTransactionId: String
+  providerReference: String
+  providerEnvironment: String
+  providerInitResponse: JSON
   confirmedAt: String
   reversalReason: String
   reversedAt: String
@@ -71709,6 +71790,17 @@ type Payment {
   """ External provider transaction id for rent payment reconciliation """
   externalTransactionId: String
 
+  """ Provider-side initiation reference used for idempotent pending online payment intents 
+  """
+  providerReference: String
+
+  """ Provider credential environment used for this online payment flow """
+  providerEnvironment: String
+
+  """ Raw provider initialization response stored for pending online rent payment intents 
+  """
+  providerInitResponse: JSON
+
   """ Time when rent payment was confirmed by provider or manually """
   confirmedAt: String
 
@@ -71963,6 +72055,46 @@ input PaymentWhereInput {
   externalTransactionId_not_ends_with_i: String
   externalTransactionId_in: [String]
   externalTransactionId_not_in: [String]
+  providerReference: String
+  providerReference_not: String
+  providerReference_contains: String
+  providerReference_not_contains: String
+  providerReference_starts_with: String
+  providerReference_not_starts_with: String
+  providerReference_ends_with: String
+  providerReference_not_ends_with: String
+  providerReference_i: String
+  providerReference_not_i: String
+  providerReference_contains_i: String
+  providerReference_not_contains_i: String
+  providerReference_starts_with_i: String
+  providerReference_not_starts_with_i: String
+  providerReference_ends_with_i: String
+  providerReference_not_ends_with_i: String
+  providerReference_in: [String]
+  providerReference_not_in: [String]
+  providerEnvironment: String
+  providerEnvironment_not: String
+  providerEnvironment_contains: String
+  providerEnvironment_not_contains: String
+  providerEnvironment_starts_with: String
+  providerEnvironment_not_starts_with: String
+  providerEnvironment_ends_with: String
+  providerEnvironment_not_ends_with: String
+  providerEnvironment_i: String
+  providerEnvironment_not_i: String
+  providerEnvironment_contains_i: String
+  providerEnvironment_not_contains_i: String
+  providerEnvironment_starts_with_i: String
+  providerEnvironment_not_starts_with_i: String
+  providerEnvironment_ends_with_i: String
+  providerEnvironment_not_ends_with_i: String
+  providerEnvironment_in: [String]
+  providerEnvironment_not_in: [String]
+  providerInitResponse: JSON
+  providerInitResponse_not: JSON
+  providerInitResponse_in: [JSON]
+  providerInitResponse_not_in: [JSON]
   confirmedAt: String
   confirmedAt_not: String
   confirmedAt_lt: String
@@ -72258,6 +72390,10 @@ enum SortPaymentsBy {
   provider_DESC
   externalTransactionId_ASC
   externalTransactionId_DESC
+  providerReference_ASC
+  providerReference_DESC
+  providerEnvironment_ASC
+  providerEnvironment_DESC
   confirmedAt_ASC
   confirmedAt_DESC
   reversalReason_ASC
@@ -72333,6 +72469,9 @@ input PaymentUpdateInput {
   paymentMethod: PaymentPaymentMethodType
   provider: PaymentProviderType
   externalTransactionId: String
+  providerReference: String
+  providerEnvironment: String
+  providerInitResponse: JSON
   confirmedAt: String
   reversalReason: String
   reversedAt: String
@@ -72393,6 +72532,9 @@ input PaymentCreateInput {
   paymentMethod: PaymentPaymentMethodType
   provider: PaymentProviderType
   externalTransactionId: String
+  providerReference: String
+  providerEnvironment: String
+  providerInitResponse: JSON
   confirmedAt: String
   reversalReason: String
   reversedAt: String
@@ -72427,6 +72569,832 @@ input PaymentCreateInput {
 
 input PaymentsCreateInput {
   data: PaymentCreateInput
+}
+
+enum PaymentProviderCredentialHistoryRecordHistoryActionType {
+  c
+  u
+  d
+}
+
+""" A keystone list """
+type PaymentProviderCredentialHistoryRecord {
+  """
+  This virtual field will be resolved in one of the following ways (in this order):
+   1. Execution of 'labelResolver' set on the PaymentProviderCredentialHistoryRecord List config, or
+   2. As an alias to the field set on 'labelField' in the PaymentProviderCredentialHistoryRecord List config, or
+   3. As an alias to a 'name' field on the PaymentProviderCredentialHistoryRecord List (if one exists), or
+   4. As an alias to the 'id' field on the PaymentProviderCredentialHistoryRecord List.
+  """
+  _label_: String
+  organization: String
+  provider: String
+  environment: String
+  publicKey: String
+  secretKey: JSON
+  webhookSecret: JSON
+  currency: String
+  initiationEnabled: Boolean
+  verificationEnabled: Boolean
+  webhookEnabled: Boolean
+  isEnabled: Boolean
+  metadata: JSON
+  id: ID!
+  v: Int
+  createdAt: String
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
+  deletedAt: String
+  newId: JSON
+  dv: Int
+  sender: JSON
+  history_date: String
+  history_action: PaymentProviderCredentialHistoryRecordHistoryActionType
+  history_id: String
+}
+
+input PaymentProviderCredentialHistoryRecordWhereInput {
+  AND: [PaymentProviderCredentialHistoryRecordWhereInput]
+  OR: [PaymentProviderCredentialHistoryRecordWhereInput]
+  organization: String
+  organization_not: String
+  organization_in: [String]
+  organization_not_in: [String]
+  provider: String
+  provider_not: String
+  provider_contains: String
+  provider_not_contains: String
+  provider_starts_with: String
+  provider_not_starts_with: String
+  provider_ends_with: String
+  provider_not_ends_with: String
+  provider_i: String
+  provider_not_i: String
+  provider_contains_i: String
+  provider_not_contains_i: String
+  provider_starts_with_i: String
+  provider_not_starts_with_i: String
+  provider_ends_with_i: String
+  provider_not_ends_with_i: String
+  provider_in: [String]
+  provider_not_in: [String]
+  environment: String
+  environment_not: String
+  environment_contains: String
+  environment_not_contains: String
+  environment_starts_with: String
+  environment_not_starts_with: String
+  environment_ends_with: String
+  environment_not_ends_with: String
+  environment_i: String
+  environment_not_i: String
+  environment_contains_i: String
+  environment_not_contains_i: String
+  environment_starts_with_i: String
+  environment_not_starts_with_i: String
+  environment_ends_with_i: String
+  environment_not_ends_with_i: String
+  environment_in: [String]
+  environment_not_in: [String]
+  publicKey: String
+  publicKey_not: String
+  publicKey_contains: String
+  publicKey_not_contains: String
+  publicKey_starts_with: String
+  publicKey_not_starts_with: String
+  publicKey_ends_with: String
+  publicKey_not_ends_with: String
+  publicKey_i: String
+  publicKey_not_i: String
+  publicKey_contains_i: String
+  publicKey_not_contains_i: String
+  publicKey_starts_with_i: String
+  publicKey_not_starts_with_i: String
+  publicKey_ends_with_i: String
+  publicKey_not_ends_with_i: String
+  publicKey_in: [String]
+  publicKey_not_in: [String]
+  secretKey: JSON
+  secretKey_not: JSON
+  secretKey_in: [JSON]
+  secretKey_not_in: [JSON]
+  webhookSecret: JSON
+  webhookSecret_not: JSON
+  webhookSecret_in: [JSON]
+  webhookSecret_not_in: [JSON]
+  currency: String
+  currency_not: String
+  currency_contains: String
+  currency_not_contains: String
+  currency_starts_with: String
+  currency_not_starts_with: String
+  currency_ends_with: String
+  currency_not_ends_with: String
+  currency_i: String
+  currency_not_i: String
+  currency_contains_i: String
+  currency_not_contains_i: String
+  currency_starts_with_i: String
+  currency_not_starts_with_i: String
+  currency_ends_with_i: String
+  currency_not_ends_with_i: String
+  currency_in: [String]
+  currency_not_in: [String]
+  initiationEnabled: Boolean
+  initiationEnabled_not: Boolean
+  verificationEnabled: Boolean
+  verificationEnabled_not: Boolean
+  webhookEnabled: Boolean
+  webhookEnabled_not: Boolean
+  isEnabled: Boolean
+  isEnabled_not: Boolean
+  metadata: JSON
+  metadata_not: JSON
+  metadata_in: [JSON]
+  metadata_not_in: [JSON]
+  id: ID
+  id_not: ID
+  id_in: [ID]
+  id_not_in: [ID]
+  v: Int
+  v_not: Int
+  v_lt: Int
+  v_lte: Int
+  v_gt: Int
+  v_gte: Int
+  v_in: [Int]
+  v_not_in: [Int]
+  createdAt: String
+  createdAt_not: String
+  createdAt_lt: String
+  createdAt_lte: String
+  createdAt_gt: String
+  createdAt_gte: String
+  createdAt_in: [String]
+  createdAt_not_in: [String]
+  updatedAt: String
+  updatedAt_not: String
+  updatedAt_lt: String
+  updatedAt_lte: String
+  updatedAt_gt: String
+  updatedAt_gte: String
+  updatedAt_in: [String]
+  updatedAt_not_in: [String]
+  createdBy: String
+  createdBy_not: String
+  createdBy_in: [String]
+  createdBy_not_in: [String]
+  updatedBy: String
+  updatedBy_not: String
+  updatedBy_in: [String]
+  updatedBy_not_in: [String]
+  deletedAt: String
+  deletedAt_not: String
+  deletedAt_lt: String
+  deletedAt_lte: String
+  deletedAt_gt: String
+  deletedAt_gte: String
+  deletedAt_in: [String]
+  deletedAt_not_in: [String]
+  newId: JSON
+  newId_not: JSON
+  newId_in: [JSON]
+  newId_not_in: [JSON]
+  dv: Int
+  dv_not: Int
+  dv_lt: Int
+  dv_lte: Int
+  dv_gt: Int
+  dv_gte: Int
+  dv_in: [Int]
+  dv_not_in: [Int]
+  sender: JSON
+  sender_not: JSON
+  sender_in: [JSON]
+  sender_not_in: [JSON]
+  history_date: String
+  history_date_not: String
+  history_date_lt: String
+  history_date_lte: String
+  history_date_gt: String
+  history_date_gte: String
+  history_date_in: [String]
+  history_date_not_in: [String]
+  history_action: PaymentProviderCredentialHistoryRecordHistoryActionType
+  history_action_not: PaymentProviderCredentialHistoryRecordHistoryActionType
+  history_action_in: [PaymentProviderCredentialHistoryRecordHistoryActionType]
+  history_action_not_in: [PaymentProviderCredentialHistoryRecordHistoryActionType]
+  history_id: String
+  history_id_not: String
+  history_id_in: [String]
+  history_id_not_in: [String]
+}
+
+input PaymentProviderCredentialHistoryRecordWhereUniqueInput {
+  id: ID!
+}
+
+enum SortPaymentProviderCredentialHistoryRecordsBy {
+  provider_ASC
+  provider_DESC
+  environment_ASC
+  environment_DESC
+  publicKey_ASC
+  publicKey_DESC
+  currency_ASC
+  currency_DESC
+  initiationEnabled_ASC
+  initiationEnabled_DESC
+  verificationEnabled_ASC
+  verificationEnabled_DESC
+  webhookEnabled_ASC
+  webhookEnabled_DESC
+  isEnabled_ASC
+  isEnabled_DESC
+  id_ASC
+  id_DESC
+  v_ASC
+  v_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  deletedAt_ASC
+  deletedAt_DESC
+  dv_ASC
+  dv_DESC
+  history_date_ASC
+  history_date_DESC
+  history_action_ASC
+  history_action_DESC
+}
+
+input PaymentProviderCredentialHistoryRecordUpdateInput {
+  organization: String
+  provider: String
+  environment: String
+  publicKey: String
+  secretKey: JSON
+  webhookSecret: JSON
+  currency: String
+  initiationEnabled: Boolean
+  verificationEnabled: Boolean
+  webhookEnabled: Boolean
+  isEnabled: Boolean
+  metadata: JSON
+  v: Int
+  createdAt: String
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
+  deletedAt: String
+  newId: JSON
+  dv: Int
+  sender: JSON
+  history_date: String
+  history_action: PaymentProviderCredentialHistoryRecordHistoryActionType
+  history_id: String
+}
+
+input PaymentProviderCredentialHistoryRecordsUpdateInput {
+  id: ID!
+  data: PaymentProviderCredentialHistoryRecordUpdateInput
+}
+
+input PaymentProviderCredentialHistoryRecordCreateInput {
+  organization: String
+  provider: String
+  environment: String
+  publicKey: String
+  secretKey: JSON
+  webhookSecret: JSON
+  currency: String
+  initiationEnabled: Boolean
+  verificationEnabled: Boolean
+  webhookEnabled: Boolean
+  isEnabled: Boolean
+  metadata: JSON
+  v: Int
+  createdAt: String
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
+  deletedAt: String
+  newId: JSON
+  dv: Int
+  sender: JSON
+  history_date: String
+  history_action: PaymentProviderCredentialHistoryRecordHistoryActionType
+  history_id: String
+}
+
+input PaymentProviderCredentialHistoryRecordsCreateInput {
+  data: PaymentProviderCredentialHistoryRecordCreateInput
+}
+
+enum PaymentProviderCredentialProviderType {
+  paystack
+}
+
+enum PaymentProviderCredentialEnvironmentType {
+  test
+  live
+}
+
+enum PaymentProviderCredentialCurrencyType {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BOV
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHE
+  CHF
+  CHW
+  CLF
+  CLP
+  CNY
+  COP
+  COU
+  CRC
+  CUC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  GBP
+  GEL
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  INR
+  IQD
+  IRR
+  ISK
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KMF
+  KPW
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MXV
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLL
+  SOS
+  SRD
+  SSP
+  STN
+  SVC
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  USN
+  UYI
+  UYU
+  UYW
+  UZS
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XAG
+  XAU
+  XBA
+  XBB
+  XBC
+  XBD
+  XCD
+  XDR
+  XOF
+  XPD
+  XPF
+  XPT
+  XSU
+  XTS
+  XUA
+  YER
+  ZAR
+  ZMW
+  ZWL
+}
+
+""" Organization-scoped payment provider credentials used for internal acquiring operations 
+"""
+type PaymentProviderCredential {
+  """
+  This virtual field will be resolved in one of the following ways (in this order):
+   1. Execution of 'labelResolver' set on the PaymentProviderCredential List config, or
+   2. As an alias to the field set on 'labelField' in the PaymentProviderCredential List config, or
+   3. As an alias to a 'name' field on the PaymentProviderCredential List (if one exists), or
+   4. As an alias to the 'id' field on the PaymentProviderCredential List.
+  """
+  _label_: String
+
+  """ Ref to the organization. The object will be deleted if the organization ceases to exist 
+  """
+  organization: Organization
+
+  """ Payment provider code """
+  provider: PaymentProviderCredentialProviderType
+
+  """ Provider credential environment """
+  environment: PaymentProviderCredentialEnvironmentType
+
+  """ Optional provider public key """
+  publicKey: String
+
+  """ Encrypted provider secret key """
+  secretKey: String
+
+  """ Encrypted provider webhook verification secret """
+  webhookSecret: String
+
+  """ Default credential currency code """
+  currency: PaymentProviderCredentialCurrencyType
+
+  """ Whether payment initiation is enabled for this credential """
+  initiationEnabled: Boolean
+
+  """ Whether payment verification is enabled for this credential """
+  verificationEnabled: Boolean
+
+  """ Whether webhook ingestion is enabled for this credential """
+  webhookEnabled: Boolean
+
+  """ Whether this credential is enabled overall """
+  isEnabled: Boolean
+
+  """ Internal-only credential metadata """
+  metadata: JSON
+  id: ID!
+  v: Int
+  createdAt: String
+  updatedAt: String
+
+  """ Identifies a user, which has created this record. It is a technical connection, that can represent real users, as well as automated systems (bots, scripts). This field should not participate in business logic. 
+  """
+  createdBy: User
+
+  """ Identifies a user, which has updated this record. It is a technical connection, that can represent real users, as well as automated systems (bots, scripts). This field should not participate in business logic. 
+  """
+  updatedBy: User
+  deletedAt: String
+  newId: String
+
+  """ Data structure Version """
+  dv: Int
+
+  """ Client-side device identification used for the anti-fraud detection. Example `{ "dv":1, "fingerprint":"VaxSw2aXZa"}`. Where the `fingerprint` should be the same for the same devices and it's not linked to the user ID. It's the device ID like browser / mobile application / remote system 
+  """
+  sender: SenderField
+}
+
+input PaymentProviderCredentialWhereInput {
+  AND: [PaymentProviderCredentialWhereInput]
+  OR: [PaymentProviderCredentialWhereInput]
+  organization: OrganizationWhereInput
+  organization_is_null: Boolean
+  provider: PaymentProviderCredentialProviderType
+  provider_not: PaymentProviderCredentialProviderType
+  provider_in: [PaymentProviderCredentialProviderType]
+  provider_not_in: [PaymentProviderCredentialProviderType]
+  environment: PaymentProviderCredentialEnvironmentType
+  environment_not: PaymentProviderCredentialEnvironmentType
+  environment_in: [PaymentProviderCredentialEnvironmentType]
+  environment_not_in: [PaymentProviderCredentialEnvironmentType]
+  publicKey: String
+  publicKey_not: String
+  publicKey_contains: String
+  publicKey_not_contains: String
+  publicKey_starts_with: String
+  publicKey_not_starts_with: String
+  publicKey_ends_with: String
+  publicKey_not_ends_with: String
+  publicKey_i: String
+  publicKey_not_i: String
+  publicKey_contains_i: String
+  publicKey_not_contains_i: String
+  publicKey_starts_with_i: String
+  publicKey_not_starts_with_i: String
+  publicKey_ends_with_i: String
+  publicKey_not_ends_with_i: String
+  publicKey_in: [String]
+  publicKey_not_in: [String]
+  secretKey: String
+  secretKey_not: String
+  secretKey_contains: String
+  secretKey_not_contains: String
+  secretKey_starts_with: String
+  secretKey_not_starts_with: String
+  secretKey_ends_with: String
+  secretKey_not_ends_with: String
+  secretKey_i: String
+  secretKey_not_i: String
+  secretKey_contains_i: String
+  secretKey_not_contains_i: String
+  secretKey_starts_with_i: String
+  secretKey_not_starts_with_i: String
+  secretKey_ends_with_i: String
+  secretKey_not_ends_with_i: String
+  secretKey_in: [String]
+  secretKey_not_in: [String]
+  webhookSecret: String
+  webhookSecret_not: String
+  webhookSecret_contains: String
+  webhookSecret_not_contains: String
+  webhookSecret_starts_with: String
+  webhookSecret_not_starts_with: String
+  webhookSecret_ends_with: String
+  webhookSecret_not_ends_with: String
+  webhookSecret_i: String
+  webhookSecret_not_i: String
+  webhookSecret_contains_i: String
+  webhookSecret_not_contains_i: String
+  webhookSecret_starts_with_i: String
+  webhookSecret_not_starts_with_i: String
+  webhookSecret_ends_with_i: String
+  webhookSecret_not_ends_with_i: String
+  webhookSecret_in: [String]
+  webhookSecret_not_in: [String]
+  currency: PaymentProviderCredentialCurrencyType
+  currency_not: PaymentProviderCredentialCurrencyType
+  currency_in: [PaymentProviderCredentialCurrencyType]
+  currency_not_in: [PaymentProviderCredentialCurrencyType]
+  initiationEnabled: Boolean
+  initiationEnabled_not: Boolean
+  verificationEnabled: Boolean
+  verificationEnabled_not: Boolean
+  webhookEnabled: Boolean
+  webhookEnabled_not: Boolean
+  isEnabled: Boolean
+  isEnabled_not: Boolean
+  metadata: JSON
+  metadata_not: JSON
+  metadata_in: [JSON]
+  metadata_not_in: [JSON]
+  id: ID
+  id_not: ID
+  id_in: [ID]
+  id_not_in: [ID]
+  v: Int
+  v_not: Int
+  v_lt: Int
+  v_lte: Int
+  v_gt: Int
+  v_gte: Int
+  v_in: [Int]
+  v_not_in: [Int]
+  createdAt: String
+  createdAt_not: String
+  createdAt_lt: String
+  createdAt_lte: String
+  createdAt_gt: String
+  createdAt_gte: String
+  createdAt_in: [String]
+  createdAt_not_in: [String]
+  updatedAt: String
+  updatedAt_not: String
+  updatedAt_lt: String
+  updatedAt_lte: String
+  updatedAt_gt: String
+  updatedAt_gte: String
+  updatedAt_in: [String]
+  updatedAt_not_in: [String]
+  createdBy: UserWhereInput
+  createdBy_is_null: Boolean
+  updatedBy: UserWhereInput
+  updatedBy_is_null: Boolean
+  deletedAt: String
+  deletedAt_not: String
+  deletedAt_lt: String
+  deletedAt_lte: String
+  deletedAt_gt: String
+  deletedAt_gte: String
+  deletedAt_in: [String]
+  deletedAt_not_in: [String]
+  newId: String
+  newId_not: String
+  newId_in: [String]
+  newId_not_in: [String]
+  dv: Int
+  dv_not: Int
+  dv_lt: Int
+  dv_lte: Int
+  dv_gt: Int
+  dv_gte: Int
+  dv_in: [Int]
+  dv_not_in: [Int]
+  sender: SenderFieldInput
+  sender_not: SenderFieldInput
+  sender_in: [SenderFieldInput]
+  sender_not_in: [SenderFieldInput]
+}
+
+input PaymentProviderCredentialWhereUniqueInput {
+  id: ID!
+}
+
+enum SortPaymentProviderCredentialsBy {
+  organization_ASC
+  organization_DESC
+  provider_ASC
+  provider_DESC
+  environment_ASC
+  environment_DESC
+  publicKey_ASC
+  publicKey_DESC
+  secretKey_ASC
+  secretKey_DESC
+  webhookSecret_ASC
+  webhookSecret_DESC
+  currency_ASC
+  currency_DESC
+  initiationEnabled_ASC
+  initiationEnabled_DESC
+  verificationEnabled_ASC
+  verificationEnabled_DESC
+  webhookEnabled_ASC
+  webhookEnabled_DESC
+  isEnabled_ASC
+  isEnabled_DESC
+  id_ASC
+  id_DESC
+  v_ASC
+  v_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdBy_ASC
+  createdBy_DESC
+  updatedBy_ASC
+  updatedBy_DESC
+  deletedAt_ASC
+  deletedAt_DESC
+  dv_ASC
+  dv_DESC
+}
+
+input PaymentProviderCredentialUpdateInput {
+  organization: OrganizationRelateToOneInput
+  provider: PaymentProviderCredentialProviderType
+  environment: PaymentProviderCredentialEnvironmentType
+  publicKey: String
+  secretKey: String
+  webhookSecret: String
+  currency: PaymentProviderCredentialCurrencyType
+  initiationEnabled: Boolean
+  verificationEnabled: Boolean
+  webhookEnabled: Boolean
+  isEnabled: Boolean
+  metadata: JSON
+  v: Int
+  createdAt: String
+  updatedAt: String
+  createdBy: UserRelateToOneInput
+  updatedBy: UserRelateToOneInput
+  deletedAt: String
+  newId: String
+  dv: Int
+  sender: SenderFieldInput
+}
+
+input PaymentProviderCredentialsUpdateInput {
+  id: ID!
+  data: PaymentProviderCredentialUpdateInput
+}
+
+input PaymentProviderCredentialCreateInput {
+  organization: OrganizationRelateToOneInput
+  provider: PaymentProviderCredentialProviderType
+  environment: PaymentProviderCredentialEnvironmentType
+  publicKey: String
+  secretKey: String
+  webhookSecret: String
+  currency: PaymentProviderCredentialCurrencyType
+  initiationEnabled: Boolean
+  verificationEnabled: Boolean
+  webhookEnabled: Boolean
+  isEnabled: Boolean
+  metadata: JSON
+  v: Int
+  createdAt: String
+  updatedAt: String
+  createdBy: UserRelateToOneInput
+  updatedBy: UserRelateToOneInput
+  deletedAt: String
+  newId: String
+  dv: Int
+  sender: SenderFieldInput
+}
+
+input PaymentProviderCredentialsCreateInput {
+  data: PaymentProviderCredentialCreateInput
 }
 
 enum PaymentStatusChangeWebhookUrlHistoryRecordHistoryActionType {
@@ -99021,6 +99989,67 @@ type ExportPropertiesToExcelOutput {
   linkToFile: String!
 }
 
+input GetTenantStatementInput {
+  dv: Int!
+  sender: SenderFieldInput!
+  organization: OrganizationWhereUniqueInput!
+  tenant: ResidentWhereUniqueInput!
+  occupancy: OccupancyWhereUniqueInput
+  property: PropertyWhereUniqueInput
+  dateFrom: String
+  dateTo: String
+}
+
+type TenantStatementHeader {
+  tenantId: ID!
+  tenantName: String!
+  tenantPhone: String
+  tenantEmail: String
+  propertyId: ID
+  propertyName: String
+  rentalUnitId: ID
+  rentalUnitName: String
+  occupancyId: ID
+  occupancyStatus: String
+  statementPeriodStart: String
+  statementPeriodEnd: String
+  currencyCode: String!
+}
+
+type TenantStatementSummary {
+  totalCharges: String!
+  totalPayments: String!
+  totalReversals: String!
+  totalCreditsAdjustments: String!
+  openingBalance: String!
+  closingBalance: String!
+  outstandingBalance: String!
+  runningBalanceAvailable: Boolean!
+}
+
+type TenantStatementRow {
+  id: ID!
+  date: String!
+  type: String!
+  description: String!
+  debit: String
+  credit: String
+  runningBalance: String
+  linkedEntityId: ID
+  linkedEntityType: String
+  reference: String
+  status: String
+  occupancyId: ID
+  propertyId: ID
+  rentalUnitId: ID
+}
+
+type TenantStatementOutput {
+  header: TenantStatementHeader!
+  summary: TenantStatementSummary!
+  rows: [TenantStatementRow!]!
+}
+
 input ResidentBillingReceiptWhereInput {
   AND: [ResidentBillingReceiptWhereInput]
   OR: [ResidentBillingReceiptWhereInput]
@@ -99880,6 +100909,21 @@ type DiscoverServiceConsumersOutput {
   statistics: DiscoverServiceConsumersOutputStatistics!
 }
 
+input CreateAdminTenantProfileInput {
+  dv: Int!
+  sender: SenderFieldInput!
+  organizationId: ID!
+  propertyId: ID!
+  name: String!
+  phone: String!
+  email: String
+  ghanaCardNumber: String
+  emergencyContactName: String
+  emergencyContactPhone: String
+  institutionName: String
+  studentIdNumber: String
+}
+
 input GetResidentExistenceByPhoneAndAddressInput {
   dv: Int!
   sender: SenderFieldInput!
@@ -100191,6 +101235,87 @@ type ActivateSubscriptionPlanOutput {
   userHelpRequest: UserHelpRequest
 }
 
+input ConfirmPaymentInput {
+  dv: Int!
+  sender: SenderFieldInput!
+  provider: String!
+  providerReference: String!
+  externalTransactionId: String!
+  amount: String!
+  currencyCode: String!
+  confirmedAt: String
+}
+
+type ConfirmPaymentOutput {
+  payment: Payment!
+  allocations: [PaymentAllocation!]!
+  receipt: PaymentReceipt!
+  ledgerBalance: String!
+}
+
+input HandleProviderWebhookIngressInput {
+  providerCode: String
+  provider: String
+  payload: JSON
+  parsedPayload: JSON
+  webhookPayload: JSON
+  metadata: JSON
+  headers: JSON
+  rawBody: String
+  environment: String
+  mode: String
+  testMode: Boolean
+  sandbox: Boolean
+  requireVerifiedSignature: Boolean
+  confirmedAt: String
+}
+
+type HandleProviderWebhookIngressOutput {
+  paymentId: ID
+  provider: String
+  providerReference: String
+  amount: String
+  currency: String
+  status: String
+  authorizationUrl: String
+  paymentUrl: String
+  actionTaken: String
+}
+
+input InitiateRentPaymentInput {
+  dv: Int!
+  sender: SenderFieldInput!
+  organization: OrganizationWhereUniqueInput!
+  tenant: ResidentWhereUniqueInput
+  occupancy: OccupancyWhereUniqueInput
+  property: PropertyWhereUniqueInput
+  rentalUnit: RentalUnitWhereUniqueInput
+  amount: String!
+  currency: String
+  currencyCode: String
+  providerCode: String!
+  paymentMethod: String
+  providerReference: String
+  reference: String
+  purpose: String
+  payer: JSON
+  payerContact: JSON
+  paymentContext: JSON
+  rentContext: JSON
+}
+
+type InitiateRentPaymentOutput {
+  paymentId: ID
+  provider: String
+  providerReference: String
+  amount: String
+  currency: String
+  status: String
+  authorizationUrl: String
+  paymentUrl: String
+  actionTaken: String
+}
+
 input RecordManualRentPaymentInput {
   dv: Int!
   sender: SenderFieldInput!
@@ -100411,6 +101536,31 @@ input SetPaymentPosReceiptUrlInput {
 
 type SetPaymentPosReceiptUrlOutput {
   success: Boolean!
+}
+
+input VerifyPendingPaymentInput {
+  dv: Int!
+  sender: SenderFieldInput!
+  providerCode: String!
+  providerReference: String
+  paymentId: ID
+  organization: OrganizationWhereUniqueInput
+  organizationId: ID
+  context: JSON
+  paymentMethod: String
+  confirmedAt: String
+}
+
+type VerifyPendingPaymentOutput {
+  paymentId: ID
+  provider: String
+  providerReference: String
+  amount: String
+  currency: String
+  status: String
+  authorizationUrl: String
+  paymentUrl: String
+  actionTaken: String
 }
 
 enum TicketReportPeriodType {
@@ -103973,6 +105123,36 @@ type Query {
   """ Retrieve the meta-data for the Payment list. """
   _PaymentsMeta: _ListMeta
 
+  """ Search for all PaymentProviderCredentialHistoryRecord items which match the where clause. 
+  """
+  allPaymentProviderCredentialHistoryRecords(where: PaymentProviderCredentialHistoryRecordWhereInput, search: String, sortBy: [SortPaymentProviderCredentialHistoryRecordsBy!], orderBy: String, first: Int, skip: Int): [PaymentProviderCredentialHistoryRecord]
+
+  """ Search for the PaymentProviderCredentialHistoryRecord item with the matching ID. 
+  """
+  PaymentProviderCredentialHistoryRecord(where: PaymentProviderCredentialHistoryRecordWhereUniqueInput!): PaymentProviderCredentialHistoryRecord
+
+  """ Perform a meta-query on all PaymentProviderCredentialHistoryRecord items which match the where clause. 
+  """
+  _allPaymentProviderCredentialHistoryRecordsMeta(where: PaymentProviderCredentialHistoryRecordWhereInput, search: String, sortBy: [SortPaymentProviderCredentialHistoryRecordsBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
+
+  """ Retrieve the meta-data for the PaymentProviderCredentialHistoryRecord list. 
+  """
+  _PaymentProviderCredentialHistoryRecordsMeta: _ListMeta
+
+  """ Search for all PaymentProviderCredential items which match the where clause. 
+  """
+  allPaymentProviderCredentials(where: PaymentProviderCredentialWhereInput, search: String, sortBy: [SortPaymentProviderCredentialsBy!], orderBy: String, first: Int, skip: Int): [PaymentProviderCredential]
+
+  """ Search for the PaymentProviderCredential item with the matching ID. """
+  PaymentProviderCredential(where: PaymentProviderCredentialWhereUniqueInput!): PaymentProviderCredential
+
+  """ Perform a meta-query on all PaymentProviderCredential items which match the where clause. 
+  """
+  _allPaymentProviderCredentialsMeta(where: PaymentProviderCredentialWhereInput, search: String, sortBy: [SortPaymentProviderCredentialsBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
+
+  """ Retrieve the meta-data for the PaymentProviderCredential list. """
+  _PaymentProviderCredentialsMeta: _ListMeta
+
   """ Search for all PaymentStatusChangeWebhookUrlHistoryRecord items which match the where clause. 
   """
   allPaymentStatusChangeWebhookUrlHistoryRecords(where: PaymentStatusChangeWebhookUrlHistoryRecordWhereInput, search: String, sortBy: [SortPaymentStatusChangeWebhookUrlHistoryRecordsBy!], orderBy: String, first: Int, skip: Int): [PaymentStatusChangeWebhookUrlHistoryRecord]
@@ -105502,6 +106682,7 @@ type Query {
   """
   findOrganizationsByTin(data: FindOrganizationsByTinInput!): FindOrganizationsByTinOutput
   exportPropertiesToExcel(data: ExportPropertiesToExcelInput!): ExportPropertiesToExcelOutput
+  getTenantStatement(data: GetTenantStatementInput!): TenantStatementOutput
   allResidentBillingReceipts(where: ResidentBillingReceiptWhereInput, first: Int, skip: Int, sortBy: [SortResidentBillingReceiptsBy!]): [ResidentBillingReceiptOutput]
 
   """
@@ -109714,6 +110895,42 @@ type Mutation {
 
   """ Delete multiple Payment items by ID. """
   deletePayments(ids: [ID!]): [Payment]
+
+  """ Create a single PaymentProviderCredentialHistoryRecord item. """
+  createPaymentProviderCredentialHistoryRecord(data: PaymentProviderCredentialHistoryRecordCreateInput): PaymentProviderCredentialHistoryRecord
+
+  """ Create multiple PaymentProviderCredentialHistoryRecord items. """
+  createPaymentProviderCredentialHistoryRecords(data: [PaymentProviderCredentialHistoryRecordsCreateInput]): [PaymentProviderCredentialHistoryRecord]
+
+  """ Update a single PaymentProviderCredentialHistoryRecord item by ID. """
+  updatePaymentProviderCredentialHistoryRecord(id: ID!, data: PaymentProviderCredentialHistoryRecordUpdateInput): PaymentProviderCredentialHistoryRecord
+
+  """ Update multiple PaymentProviderCredentialHistoryRecord items by ID. """
+  updatePaymentProviderCredentialHistoryRecords(data: [PaymentProviderCredentialHistoryRecordsUpdateInput]): [PaymentProviderCredentialHistoryRecord]
+
+  """ Delete a single PaymentProviderCredentialHistoryRecord item by ID. """
+  deletePaymentProviderCredentialHistoryRecord(id: ID!): PaymentProviderCredentialHistoryRecord
+
+  """ Delete multiple PaymentProviderCredentialHistoryRecord items by ID. """
+  deletePaymentProviderCredentialHistoryRecords(ids: [ID!]): [PaymentProviderCredentialHistoryRecord]
+
+  """ Create a single PaymentProviderCredential item. """
+  createPaymentProviderCredential(data: PaymentProviderCredentialCreateInput): PaymentProviderCredential
+
+  """ Create multiple PaymentProviderCredential items. """
+  createPaymentProviderCredentials(data: [PaymentProviderCredentialsCreateInput]): [PaymentProviderCredential]
+
+  """ Update a single PaymentProviderCredential item by ID. """
+  updatePaymentProviderCredential(id: ID!, data: PaymentProviderCredentialUpdateInput): PaymentProviderCredential
+
+  """ Update multiple PaymentProviderCredential items by ID. """
+  updatePaymentProviderCredentials(data: [PaymentProviderCredentialsUpdateInput]): [PaymentProviderCredential]
+
+  """ Delete a single PaymentProviderCredential item by ID. """
+  deletePaymentProviderCredential(id: ID!): PaymentProviderCredential
+
+  """ Delete multiple PaymentProviderCredential items by ID. """
+  deletePaymentProviderCredentials(ids: [ID!]): [PaymentProviderCredential]
 
   """ Create a single PaymentStatusChangeWebhookUrlHistoryRecord item. """
   createPaymentStatusChangeWebhookUrlHistoryRecord(data: PaymentStatusChangeWebhookUrlHistoryRecordCreateInput): PaymentStatusChangeWebhookUrlHistoryRecord
@@ -115108,6 +116325,7 @@ type Mutation {
   """
   sendMessageToResidentScopes(data: SendMessageToResidentScopesServiceInput!): SendMessageToResidentScopesServiceOutput
   discoverServiceConsumers(data: DiscoverServiceConsumersInput!): DiscoverServiceConsumersOutput
+  createAdminTenantProfile(data: CreateAdminTenantProfileInput!): Resident
   registerResidentInvoice(data: RegisterResidentInvoiceInput!): Invoice
   syncTourSteps(data: SyncTourStepsInput!): SyncTourStepsOutput
 
@@ -115356,6 +116574,9 @@ type Mutation {
   }`
   """
   activateSubscriptionPlan(data: ActivateSubscriptionPlanInput!): ActivateSubscriptionPlanOutput
+  confirmPayment(data: ConfirmPaymentInput!): ConfirmPaymentOutput
+  handleProviderWebhookIngress(data: HandleProviderWebhookIngressInput!): HandleProviderWebhookIngressOutput
+  initiateRentPayment(data: InitiateRentPaymentInput!): InitiateRentPaymentOutput
   recordManualRentPayment(data: RecordManualRentPaymentInput!): RecordManualRentPaymentOutput
   reverseManualRentPayment(data: ReverseManualRentPaymentInput!): ReverseManualRentPaymentOutput
   registerMultiPayment(data: RegisterMultiPaymentInput!): RegisterMultiPaymentOutput
@@ -115364,6 +116585,7 @@ type Mutation {
   createPaymentByLink(data: CreatePaymentByLinkInput!): CreatePaymentByLinkOutput
   registerMultiPaymentForInvoices(data: RegisterMultiPaymentForInvoicesInput!): RegisterMultiPaymentForInvoicesOutput
   setPaymentPosReceiptUrl(data: SetPaymentPosReceiptUrlInput!): SetPaymentPosReceiptUrlOutput
+  verifyPendingPayment(data: VerifyPendingPaymentInput!): VerifyPendingPaymentOutput
   sendB2CAppPushMessage(data: SendB2CAppPushMessageInput!): SendB2CAppPushMessageOutput
 
   """

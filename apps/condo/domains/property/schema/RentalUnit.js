@@ -105,6 +105,17 @@ const RentalUnit = new GQLListSchema('RentalUnit', {
         },
     },
     hooks: {
+        resolveInput: async ({ operation, resolvedData }) => {
+            if (operation === 'create' && !resolvedData.organization && resolvedData.property) {
+                const property = await getById('Property', resolvedData.property)
+
+                if (property && property.organization) {
+                    resolvedData.organization = property.organization
+                }
+            }
+
+            return resolvedData
+        },
         validateInput: async ({ resolvedData, existingItem, operation, context }) => {
             const item = { ...existingItem, ...resolvedData }
 

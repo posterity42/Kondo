@@ -134,12 +134,9 @@ const RentalUnitsPage: PageComponentType = () => {
 
     const handleSubmit = async () => {
         const values = await form.validateFields()
-        const data = {
+        const baseData = {
             dv: 1,
             sender: getClientSideSenderInfo(),
-            organization: { connect: { id: organizationId } },
-            property: { connect: { id: values.property } },
-            ...(values.parent ? { parent: { connect: { id: values.parent } } } : {}),
             name: values.name,
             unitType: values.unitType,
             rentable: values.rentable,
@@ -148,10 +145,22 @@ const RentalUnitsPage: PageComponentType = () => {
         }
 
         if (selectedUnit?.id) {
-            await updateRentalUnit({ variables: { id: selectedUnit.id, data } })
+            const updateData = {
+                ...baseData,
+                ...(values.parent
+                    ? { parent: { connect: { id: values.parent } } }
+                    : { parent: { disconnectAll: true } }),
+            }
+            await updateRentalUnit({ variables: { id: selectedUnit.id, data: updateData } })
             notification.success({ message: 'Rental Unit updated' })
         } else {
-            await createRentalUnit({ variables: { data } })
+            const createData = {
+                ...baseData,
+                organization: { connect: { id: organizationId } },
+                property: { connect: { id: values.property } },
+                ...(values.parent ? { parent: { connect: { id: values.parent } } } : {}),
+            }
+            await createRentalUnit({ variables: { data: createData } })
             notification.success({ message: 'Rental Unit created' })
         }
 
