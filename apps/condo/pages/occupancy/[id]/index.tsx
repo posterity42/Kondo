@@ -181,12 +181,12 @@ const OccupancyPage: PageComponentType = () => {
     const [cancelOccupancy, cancelState] = useMutation(CANCEL_OCCUPANCY)
 
     if (loading || error) {
-        return <LoadingOrErrorPage title='Occupancy' loading={loading} error={error?.message} />
+        return <LoadingOrErrorPage title='Tenancy' loading={loading} error={error?.message} />
     }
 
     const occupancy = get(data, 'occupancy')
     if (!occupancy) {
-        return <LoadingOrErrorPage title='Occupancy' loading={false} error='Occupancy not found' />
+        return <LoadingOrErrorPage title='Tenancy' loading={false} error='Tenancy not found' />
     }
 
     const ledgers = get(data, 'ledgers', [])
@@ -229,7 +229,7 @@ const OccupancyPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy renewed' })
+            notification.success({ message: 'Tenancy renewed' })
         }
 
         if (actionState?.type === 'checkOut') {
@@ -245,7 +245,7 @@ const OccupancyPage: PageComponentType = () => {
                 },
             })
             const arrears = get(result, ['data', 'result', 'arrears'])
-            notification.success({ message: `Occupancy checked out${arrears ? ` with arrears ${arrears.amount} ${arrears.currencyCode}` : ''}` })
+            notification.success({ message: `Tenancy checked out${arrears ? ` with arrears ${arrears.amount} ${arrears.currencyCode}` : ''}` })
         }
 
         if (actionState?.type === 'transfer') {
@@ -264,7 +264,7 @@ const OccupancyPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy transferred' })
+            notification.success({ message: 'Tenancy transferred' })
         }
 
         if (actionState?.type === 'cancel') {
@@ -277,7 +277,7 @@ const OccupancyPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy canceled' })
+            notification.success({ message: 'Tenancy canceled' })
         }
 
         closeAction()
@@ -317,11 +317,11 @@ const OccupancyPage: PageComponentType = () => {
     return (
         <PageWrapper>
             <PageHeader
-                title={`Occupancy ${occupancy.id}`}
+                title={`Tenancy ${occupancy.id}`}
                 subTitle={getTenantName(get(occupancy, 'tenant'))}
                 extra={[
                     renderLink('View tenant', `/tenant/${get(occupancy, ['tenant', 'id'])}`),
-                    renderLink('Statement', `/occupancy/${occupancy.id}/statement`),
+                    renderLink('Statement', `/tenancy/${occupancy.id}/statement`),
                     renderLink('Record payment', `/payment?mode=record&tenantId=${get(occupancy, ['tenant', 'id'])}&occupancyId=${occupancy.id}&propertyId=${get(occupancy, ['property', 'id'])}&rentalUnitId=${get(occupancy, ['rentalUnit', 'id'])}`),
                     ...(primaryLedger ? [renderLink('Open ledger', `/ledger/${primaryLedger.id}`)] : []),
                     ...actions.map(action => (
@@ -337,7 +337,7 @@ const OccupancyPage: PageComponentType = () => {
                         type='info'
                         showIcon
                         message='Operational hub'
-                        description='Use this screen to review the tenant, billing, ledger, payments, receipts, and safe lifecycle actions for the current occupancy.'
+                        description='Use this screen to review the tenant, billing, ledger, payments, receipts, and lifecycle actions for the current tenancy.'
                     />
                     <Row gutter={[24, 24]}>
                         <Col xs={24} md={8}>
@@ -353,9 +353,9 @@ const OccupancyPage: PageComponentType = () => {
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
-                            <Card title='Rental Unit Summary'>
+                            <Card title='Unit / Room / Bed Summary'>
                                 <Space direction='vertical' size={8}>
-                                    <Typography.Text>Unit: {getRentalUnitName(intl, get(occupancy, 'rentalUnit'))}</Typography.Text>
+                                    <Typography.Text>Unit / Room / Bed: {getRentalUnitName(intl, get(occupancy, 'rentalUnit'))}</Typography.Text>
                                     <Typography.Text>Property: {getPropertyName(get(occupancy, 'property'))}</Typography.Text>
                                     <Typography.Text>Unit Type: {get(occupancy, ['rentalUnit', 'unitType']) || '—'}</Typography.Text>
                                     <Typography.Text>Parent Unit: {get(occupancy, ['rentalUnit', 'parent', 'name']) || '—'}</Typography.Text>
@@ -372,7 +372,7 @@ const OccupancyPage: PageComponentType = () => {
                                     <Typography.Text>Billing Frequency: {get(occupancy, 'billingFrequency') || '—'}</Typography.Text>
                                     <Typography.Text>Monthly Rate: {formatMoney(intl, get(occupancy, 'monthlyRate'))}</Typography.Text>
                                     <Typography.Text>Ledger: {primaryLedger ? renderLink(primaryLedger.id, `/ledger/${primaryLedger.id}`) : 'No tenant ledger linked yet'}</Typography.Text>
-                                    <Typography.Text>Statement: {renderLink('Open occupancy statement', `/occupancy/${occupancy.id}/statement`)}</Typography.Text>
+                                    <Typography.Text>Statement: {renderLink('Open tenancy statement', `/tenancy/${occupancy.id}/statement`)}</Typography.Text>
                                 </Space>
                             </Card>
                         </Col>
@@ -381,7 +381,7 @@ const OccupancyPage: PageComponentType = () => {
                         <Alert
                             type='warning'
                             showIcon
-                            message='No rent charges are currently linked to this occupancy'
+                            message='No rent charges are currently linked to this tenancy'
                             description='If charges were expected, the current backend flow did not auto-generate them for this check-in yet.'
                         />
                     )}
@@ -412,7 +412,7 @@ const OccupancyPage: PageComponentType = () => {
             <Modal
                 destroyOnClose
                 open={!!actionState}
-                title={`Occupancy ${actionState?.type}`}
+                title={`Tenancy ${actionState?.type}`}
                 onCancel={closeAction}
                 onOk={handleSubmit}
                 confirmLoading={renewState.loading || checkOutState.loading || transferState.loading || cancelState.loading}
@@ -445,7 +445,7 @@ const OccupancyPage: PageComponentType = () => {
                     )}
                     {actionState?.type === 'transfer' && (
                         <>
-                            <Form.Item name='targetRentalUnitId' label='Target Rental Unit' rules={[{ required: true, message: 'Select the destination unit' }]}>
+                            <Form.Item name='targetRentalUnitId' label='Target Unit / Room / Bed' rules={[{ required: true, message: 'Select the destination unit' }]}>
                                 <Select showSearch options={rentalUnits.filter(unit => unit.id !== get(occupancy, ['rentalUnit', 'id'])).map(unit => ({
                                     label: `${getRentalUnitName(intl, unit)} (${getPropertyName(get(unit, 'property'))})`,
                                     value: unit.id,
@@ -474,7 +474,7 @@ const OccupancyPage: PageComponentType = () => {
                     )}
                     {actionState?.type === 'cancel' && (
                         <Typography.Text type='secondary'>
-                            This cancels a planned occupancy only. No frontend accounting logic is introduced here.
+                            This cancels a planned tenancy only. No frontend accounting logic is introduced here.
                         </Typography.Text>
                     )}
                 </Form>

@@ -250,7 +250,7 @@ const PaymentsPage: PageComponentType = () => {
             render: (_, payment) => renderLink(getTenantName(get(payment, 'tenant')), `/tenant/${get(payment, ['tenant', 'id'])}`),
         },
         {
-            title: 'Rental Unit',
+            title: 'Unit / Room / Bed',
             key: 'rentalUnit',
             render: (_, payment) => getRentalUnitName(intl, get(payment, 'rentalUnit')),
         },
@@ -324,13 +324,13 @@ const PaymentsPage: PageComponentType = () => {
                     <Form.Item name='tenantId' label='Tenant' rules={[{ required: true, message: 'Select a tenant' }]}>
                         <Select showSearch options={tenantOptions} />
                     </Form.Item>
-                    <Form.Item name='occupancyId' label='Occupancy'>
+                    <Form.Item name='occupancyId' label='Tenancy'>
                         <Select allowClear showSearch options={occupancyOptions} />
                     </Form.Item>
                     <Form.Item name='propertyId' label='Property'>
                         <Select allowClear showSearch options={propertyOptions} />
                     </Form.Item>
-                    <Form.Item name='rentalUnitId' label='Rental Unit'>
+                    <Form.Item name='rentalUnitId' label='Unit / Room / Bed'>
                         <Select allowClear showSearch options={rentalUnitOptions} />
                     </Form.Item>
                     <Form.Item name='amount' label='Amount (GHS)' rules={[{ required: true, message: 'Enter the payment amount' }]}>

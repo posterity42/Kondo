@@ -29,7 +29,7 @@ import {
 } from '@condo/domains/property/components/RentalAdmin/utils'
 
 const GET_CHECK_IN_WIZARD = gql`
-    query getOccupancyCheckInWizard ($organizationId: ID!) {
+    query getTenancyCheckInWizard ($organizationId: ID!) {
         tenants: allResidents(
             where: { organization: { id: $organizationId }, deletedAt: null }
             sortBy: [createdAt_DESC]
@@ -83,7 +83,7 @@ const GET_CHECK_IN_WIZARD = gql`
 `
 
 const CHECK_IN_OCCUPANCY = gql`
-    mutation checkInOccupancyFromWizard ($data: CheckInOccupancyInput!) {
+    mutation checkInTenancyFromWizard ($data: CheckInOccupancyInput!) {
         result: checkInOccupancy(data: $data) {
             occupancy { id }
             rentChargeGeneration { createdCount invoiceId }
@@ -243,7 +243,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
         })
 
         if (occupancyId) {
-            await router.push(`/occupancy/${occupancyId}`)
+            await router.push(`/tenancy/${occupancyId}`)
         }
     }
 
@@ -251,17 +251,17 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
         <PageWrapper>
             <PageHeader
                 title='Check In Tenant'
-                subTitle='Guided occupancy creation without changing rent or ledger logic'
+                subTitle='Guided tenancy creation without changing rent or ledger logic'
                 extra={[
-                    <Link key='all-occupancies' href='/occupancy'>
-                        <Button type='secondary'>Back to Occupancies</Button>
+                    <Link key='all-tenancies' href='/tenancy'>
+                        <Button type='secondary'>Back to Tenancies</Button>
                     </Link>,
                 ]}
             />
             <PageContent>
                 <Space direction='vertical' size={24} width='100%'>
                     <Typography.Text type='secondary'>
-                        This wizard only calls the existing `checkInOccupancy` mutation. It does not create payments, ledger entries, or custom billing logic on its own.
+                        This wizard creates a tenancy. It does not create payments, ledger entries, or custom billing logic on its own.
                     </Typography.Text>
                     <PageError error={error} />
                     <Steps
@@ -269,7 +269,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                         items={[
                             { title: 'Tenant' },
                             { title: 'Property & Unit' },
-                            { title: 'Occupancy Terms' },
+                            { title: 'Tenancy Terms' },
                             { title: 'Review' },
                         ]}
                     />
@@ -299,11 +299,11 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                     <Alert
                                         type='info'
                                         showIcon
-                                        message='Tenant creation is available as a separate safe admin flow'
-                                        description='Create a tenant profile first when the person does not exist yet. The new flow creates a tenant record without creating occupancy, payments, ledger entries, or app login credentials.'
+                                        message='Tenant creation is available as a separate admin flow'
+                                        description='Create a tenant profile first when the person does not exist yet. The flow creates a tenant record without creating payments, ledger entries, or app login credentials.'
                                     />
                                     {canManageResidents && (
-                                        <Link href='/tenant/create?redirectTo=/occupancy/check-in'>
+                                        <Link href='/tenant/create?redirectTo=/tenancy/check-in'>
                                             <Button type='secondary'>Create Tenant</Button>
                                         </Link>
                                     )}
@@ -329,13 +329,13 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                             <Descriptions.Item label='Tenant'>{getTenantName(selectedTenant)}</Descriptions.Item>
                                             <Descriptions.Item label='Phone'>{get(selectedTenant, ['user', 'phone']) || '—'}</Descriptions.Item>
                                             <Descriptions.Item label='Email'>{get(selectedTenant, ['user', 'email']) || '—'}</Descriptions.Item>
-                                            <Descriptions.Item label='Current Occupancy'>
+                                            <Descriptions.Item label='Current Tenancy'>
                                                 {get(selectedTenant, ['currentOccupancy', 'id'])
                                                     ? renderLink(
                                                         `${get(selectedTenant, ['currentOccupancy', 'status']) || 'active'} • ${getRentalUnitName(intl, get(selectedTenant, ['currentOccupancy', 'rentalUnit']))}`,
-                                                        `/occupancy/${get(selectedTenant, ['currentOccupancy', 'id'])}`
+                                                        `/tenancy/${get(selectedTenant, ['currentOccupancy', 'id'])}`
                                                     )
-                                                    : 'No active occupancy'}
+                                                    : 'No active tenancy'}
                                             </Descriptions.Item>
                                         </Descriptions>
                                     )}
@@ -343,22 +343,22 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                         <Alert
                                             type='warning'
                                             showIcon
-                                            message='This tenant already has an active occupancy'
-                                            description='Review the existing occupancy before creating a new check-in so you do not duplicate an active stay.'
+                                            message='This tenant already has an active tenancy'
+                                            description='Review the existing tenancy before creating a new check-in so you do not duplicate an active stay.'
                                         />
                                     )}
                                 </Space>
                             </Card>
                         )}
                         {currentStep === 1 && (
-                            <Card title='Step 2. Choose property and rental unit'>
+                            <Card title='Step 2. Choose property and unit / room / bed'>
                                 <Space direction='vertical' size={16} width='100%'>
                                     <Form.Item name='propertyId' label='Property' rules={[{ required: true, message: 'Select a property' }]}>
                                         <Select showSearch options={propertyOptions} placeholder='Select property' />
                                     </Form.Item>
                                     {propertyId && (
                                         <>
-                                            <Form.Item label='Search rental unit'>
+                                            <Form.Item label='Search unit / room / bed'>
                                                 <Input
                                                     allowClear
                                                     value={unitSearch}
@@ -366,7 +366,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                                     placeholder='Search room, bed, apartment, or house'
                                                 />
                                             </Form.Item>
-                                            <Form.Item name='rentalUnitId' label='Rental Unit' rules={[{ required: true, message: 'Select an available rental unit' }]}>
+                                            <Form.Item name='rentalUnitId' label='Unit / Room / Bed' rules={[{ required: true, message: 'Select an available unit, room, or bed' }]}>
                                                 <Select
                                                     showSearch
                                                     filterOption={false}
@@ -382,7 +382,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                             />
                                             {selectedRentalUnit && (
                                                 <Descriptions bordered column={1} size='small'>
-                                                    <Descriptions.Item label='Rental Unit'>{getRentalUnitName(intl, selectedRentalUnit)}</Descriptions.Item>
+                                                    <Descriptions.Item label='Unit / Room / Bed'>{getRentalUnitName(intl, selectedRentalUnit)}</Descriptions.Item>
                                                     <Descriptions.Item label='Type'>{get(selectedRentalUnit, 'unitType') || '—'}</Descriptions.Item>
                                                     <Descriptions.Item label='Parent'>{get(selectedRentalUnit, ['parent', 'name']) || '—'}</Descriptions.Item>
                                                     <Descriptions.Item label='Rentable'>{get(selectedRentalUnit, 'rentable') ? 'Yes' : 'No'}</Descriptions.Item>
@@ -396,7 +396,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                             </Card>
                         )}
                         {currentStep === 2 && (
-                            <Card title='Step 3. Occupancy terms'>
+                            <Card title='Step 3. Tenancy terms'>
                                 <Space direction='vertical' size={16} width='100%'>
                                     <AntSpace size={16} style={{ display: 'flex' }}>
                                         <Form.Item name='startDate' label='Start Date' rules={[{ required: true, message: 'Select start date' }]} style={{ flex: 1 }}>
@@ -431,7 +431,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                         <Descriptions.Item label='Phone'>{get(selectedTenant, ['user', 'phone']) || '—'}</Descriptions.Item>
                                         <Descriptions.Item label='Email'>{get(selectedTenant, ['user', 'email']) || '—'}</Descriptions.Item>
                                         <Descriptions.Item label='Property'>{getPropertyName(selectedProperty)}</Descriptions.Item>
-                                        <Descriptions.Item label='Rental Unit'>{getRentalUnitName(intl, selectedRentalUnit)}</Descriptions.Item>
+                                        <Descriptions.Item label='Unit / Room / Bed'>{getRentalUnitName(intl, selectedRentalUnit)}</Descriptions.Item>
                                         <Descriptions.Item label='Unit Type'>{get(selectedRentalUnit, 'unitType') || '—'}</Descriptions.Item>
                                         <Descriptions.Item label='Start Date'>{formatDate(form.getFieldValue('startDate')?.toISOString?.())}</Descriptions.Item>
                                         <Descriptions.Item label='Expected End'>{formatDate(form.getFieldValue('expectedEndDate')?.toISOString?.())}</Descriptions.Item>
@@ -442,7 +442,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                                         type='info'
                                         showIcon
                                         message='What happens after submit'
-                                        description='You will be redirected to occupancy detail. If rent charges are not auto-generated by backend logic, the detail page will show the occupancy without inventing any billing records in the UI.'
+                                        description='You will be redirected to tenancy detail. If rent charges are not auto-generated by backend logic, the detail page will show the tenancy without inventing any billing records in the UI.'
                                     />
                                 </Space>
                             </Card>
@@ -469,7 +469,7 @@ const OccupancyCheckInWizardPage: PageComponentType = () => {
                         <Alert
                             type='warning'
                             showIcon
-                            message='You do not have permission to manage occupancies'
+                            message='You do not have permission to manage tenancies'
                         />
                     )}
                     {loading && <Typography.Text type='secondary'>Loading tenant and rental data…</Typography.Text>}

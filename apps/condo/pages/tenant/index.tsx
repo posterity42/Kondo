@@ -7,7 +7,7 @@ import React, { useMemo, useState } from 'react'
 
 import { useIntl } from '@open-condo/next/intl'
 import { useOrganization } from '@open-condo/next/organization'
-import { Button, Space, Typography } from '@open-condo/ui'
+import { Button, Space } from '@open-condo/ui'
 
 import { PageHeader, PageWrapper } from '@condo/domains/common/components/containers/BaseLayout'
 import { TablePageContent } from '@condo/domains/common/components/containers/BaseLayout/BaseLayout'
@@ -36,6 +36,19 @@ const GET_TENANTS = gql`
                 rentalUnit { id name unitType }
             }
         }
+        ledgers: allTenantLedgers(
+            where: { organization: { id: $organizationId }, deletedAt: null }
+            first: ${DEFAULT_PAGE_SIZE}
+        ) {
+            id
+            currencyCode
+            tenant { id }
+            entries(first: 100, where: { deletedAt: null }) {
+                id
+                direction
+                amount
+            }
+        }
     }
 `
 
@@ -53,6 +66,11 @@ const TenantsPage: PageComponentType = () => {
     })
 
     const tenants = get(data, 'tenants', [])
+    const ledgersByTenantId = useMemo(() => get(data, 'ledgers', []).reduce((map, ledger) => {
+        const tenantId = get(ledger, ['tenant', 'id'])
+        if (tenantId && !map[tenantId]) map[tenantId] = ledger
+        return map
+    }, {}), [data])
     const propertyOptions = useMemo(() => Array.from(new Map(
         tenants
             .filter(tenant => get(tenant, ['property', 'id']))
@@ -76,18 +94,25 @@ const TenantsPage: PageComponentType = () => {
         ])
     }), [propertyFilter, search, statusFilter, tenants])
 
+    const getTenantBalance = (tenant) => {
+        const ledger = ledgersByTenantId[tenant.id]
+        const entries = get(ledger, 'entries', [])
+        const debits = entries.reduce((sum, entry) => get(entry, 'direction') === 'debit' ? sum + Number(get(entry, 'amount') || 0) : sum, 0)
+        const credits = entries.reduce((sum, entry) => get(entry, 'direction') !== 'debit' ? sum + Number(get(entry, 'amount') || 0) : sum, 0)
+
+        return formatMoney(intl, debits - credits, get(ledger, 'currencyCode'))
+    }
+
     const columns = [
         { title: 'Tenant', key: 'tenant', render: (_, tenant) => renderLink(getTenantName(tenant), `/tenant/${tenant.id}`) },
         { title: 'Phone', key: 'phone', render: (_, tenant) => get(tenant, ['user', 'phone']) || get(tenant, 'emergencyContactPhone') || '—' },
         { title: 'Property', key: 'property', render: (_, tenant) => getPropertyName(get(tenant, 'property')) },
-        { title: 'Current Occupancy', key: 'occupancy', render: (_, tenant) => {
+        { title: 'Unit / Room / Bed', key: 'tenancyUnit', render: (_, tenant) => {
             const occupancy = get(tenant, 'currentOccupancy')
-            return occupancy ? renderLink(getRentalUnitName(intl, get(occupancy, 'rentalUnit')), `/occupancy/${get(occupancy, 'id')}`) : '—'
+            return occupancy ? renderLink(getRentalUnitName(intl, get(occupancy, 'rentalUnit')), `/tenancy/${get(occupancy, 'id')}`) : '—'
         } },
-        { title: 'Occupancy Status', key: 'status', render: (_, tenant) => <StatusTag status={get(tenant, ['currentOccupancy', 'status'])} /> },
-        { title: 'Monthly Rate', key: 'monthlyRate', render: (_, tenant) => formatMoney(intl, get(tenant, ['currentOccupancy', 'monthlyRate'])) },
-        { title: 'Ghana Card', dataIndex: 'ghanaCardNumber', key: 'ghanaCardNumber' },
-        { title: 'Institution', dataIndex: 'institutionName', key: 'institutionName' },
+        { title: 'Tenancy Status', key: 'status', render: (_, tenant) => <StatusTag status={get(tenant, ['currentOccupancy', 'status'])} /> },
+        { title: 'Balance', key: 'balance', render: (_, tenant) => getTenantBalance(tenant) },
         { title: 'Statement', key: 'statement', render: (_, tenant) => renderLink('Open', `/tenant/${tenant.id}/statement`) },
     ]
 
@@ -95,24 +120,21 @@ const TenantsPage: PageComponentType = () => {
         <PageWrapper>
             <PageHeader
                 title='Tenants'
-                subTitle='Tenant records exposed from the resident model'
+                subTitle='Tenant profiles, tenancy status, balances, and rental links'
                 extra={canManageResidents ? [
                     <Link key='create-tenant' href='/tenant/create'>
-                        <Button type='primary'>Create Tenant</Button>
+                        <Button type='primary'>Add Tenant</Button>
                     </Link>,
                 ] : []}
             />
             <TablePageContent>
                 <Space direction='vertical' size={24} width='100%'>
-                    <Typography.Text type='secondary'>
-                        The backend model remains Resident internally, but this admin UI presents it as Tenant for rental workflows.
-                    </Typography.Text>
                     <Card title='Filters' size='small'>
                         <Space direction='vertical' size={12} width='100%'>
                             <Input allowClear value={search} onChange={event => setSearch(event.target.value)} placeholder='Search by tenant, phone, email, Ghana Card, property, or institution' />
                             <Space wrap size={12}>
                                 <Select allowClear showSearch placeholder='Property' value={propertyFilter} onChange={setPropertyFilter} options={propertyOptions} style={{ minWidth: 220 }} />
-                                <Select allowClear placeholder='Occupancy Status' value={statusFilter} onChange={setStatusFilter} options={[
+                                <Select allowClear placeholder='Tenancy Status' value={statusFilter} onChange={setStatusFilter} options={[
                                     { label: 'planned', value: 'planned' },
                                     { label: 'active', value: 'active' },
                                     { label: 'ended', value: 'ended' },

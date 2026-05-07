@@ -28,25 +28,25 @@ const OccupancyStatementRoute: PageComponentType = () => {
     })
 
     if (loading || error) {
-        return <LoadingOrErrorPage title='Occupancy Statement' loading={loading} error={error?.message} />
+        return <LoadingOrErrorPage title='Tenancy Statement' loading={loading} error={error?.message} />
     }
 
     const occupancy = get(data, 'occupancy')
     const tenantId = get(occupancy, ['tenant', 'id'])
 
     if (!occupancy || !tenantId || Array.isArray(occupancyId)) {
-        return <LoadingOrErrorPage title='Occupancy Statement' loading={false} error='Occupancy not found' />
+        return <LoadingOrErrorPage title='Tenancy Statement' loading={false} error='Tenancy not found' />
     }
 
     return (
         <StatementPage
-            title='Occupancy Statement'
+            title='Tenancy Statement'
             subTitle='Ledger-first occupancy statement'
             tenantId={tenantId}
             occupancyId={occupancyId}
             propertyId={get(occupancy, ['property', 'id'])}
             extraLinks={[
-                renderLink('Back to occupancy', `/occupancy/${occupancyId}`),
+                renderLink('Back to tenancy', `/tenancy/${occupancyId}`),
                 renderLink('View tenant', `/tenant/${tenantId}`),
             ]}
         />

@@ -202,9 +202,9 @@ export const StatementPage: React.FC<StatementPageProps> = ({ title, subTitle, t
             },
         },
         {
-            title: 'Occupancy',
+            title: 'Tenancy',
             key: 'occupancy',
-            render: (_, row) => get(row, 'occupancyId') ? renderLink(get(row, 'occupancyId'), `/occupancy/${get(row, 'occupancyId')}`) : '—',
+            render: (_, row) => get(row, 'occupancyId') ? renderLink(get(row, 'occupancyId'), `/tenancy/${get(row, 'occupancyId')}`) : '—',
         },
     ]
 
@@ -249,13 +249,13 @@ export const StatementPage: React.FC<StatementPageProps> = ({ title, subTitle, t
                                             : get(header, 'propertyName') || '—'}
                                     </Typography.Text>
                                     <Typography.Text>
-                                        Rental Unit: {get(header, 'rentalUnitId')
+                                        Unit / Room / Bed: {get(header, 'rentalUnitId')
                                             ? renderLink(getRentalUnitName(intl, { id: get(header, 'rentalUnitId'), name: get(header, 'rentalUnitName') }), `/rentalUnit/${get(header, 'rentalUnitId')}`)
                                             : get(header, 'rentalUnitName') || '—'}
                                     </Typography.Text>
                                     <Typography.Text>
-                                        Occupancy: {get(header, 'occupancyId')
-                                            ? renderLink(get(header, 'occupancyId'), `/occupancy/${get(header, 'occupancyId')}`)
+                                        Tenancy: {get(header, 'occupancyId')
+                                            ? renderLink(get(header, 'occupancyId'), `/tenancy/${get(header, 'occupancyId')}`)
                                             : '—'}
                                     </Typography.Text>
                                 </Space>

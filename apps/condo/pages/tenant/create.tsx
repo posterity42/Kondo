@@ -113,7 +113,7 @@ const TenantCreatePageContent: React.FC = () => {
 
         notification.success({
             message: 'Tenant created',
-            description: 'The tenant profile was created without creating login credentials or occupancy records.',
+            description: 'The tenant profile was created without requiring a contact or resident pre-step.',
         })
 
         if (redirectTo && tenantId) {
@@ -138,7 +138,7 @@ const TenantCreatePageContent: React.FC = () => {
             <PageWrapper>
                 <PageHeader
                     title='Create Tenant'
-                    subTitle='Create a rental tenant profile without creating app credentials or occupancy records'
+                    subTitle='Create a rental tenant profile directly'
                     extra={[
                         <Link key='back-to-tenants' href='/tenant'>
                             <Button type='secondary'>Back to Tenants</Button>
@@ -148,7 +148,7 @@ const TenantCreatePageContent: React.FC = () => {
                 <PageContent>
                     <Space direction='vertical' size={24} width='100%'>
                         <Typography.Text type='secondary'>
-                            Choose the property this tenant belongs to. The existing resident compatibility model stores a home property, so the first version keeps tenant creation property-scoped.
+                            Choose the property this tenant belongs to. You can assign a tenancy from the tenant detail page after saving.
                         </Typography.Text>
                         <PageError error={error} />
                         {loading && <Loader />}

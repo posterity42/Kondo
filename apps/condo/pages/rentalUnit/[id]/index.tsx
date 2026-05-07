@@ -65,17 +65,17 @@ const RentalUnitPage: PageComponentType = () => {
     })
 
     if (loading || error) {
-        return <LoadingOrErrorPage title='Rental Unit' loading={loading} error={error?.message} />
+        return <LoadingOrErrorPage title='Unit / Room / Bed' loading={loading} error={error?.message} />
     }
 
     const rentalUnit = get(data, 'rentalUnit')
     if (!rentalUnit) {
-        return <LoadingOrErrorPage title='Rental Unit' loading={false} error='Rental unit not found' />
+        return <LoadingOrErrorPage title='Unit / Room / Bed' loading={false} error='Unit, room, or bed not found' />
     }
 
     const childColumns = [
         {
-            title: 'Child Unit',
+            title: 'Child Unit / Room / Bed',
             dataIndex: 'name',
             key: 'name',
             render: (_, unit) => renderLink(get(unit, 'name') || unit.id, `/rentalUnit/${unit.id}`),
@@ -101,7 +101,7 @@ const RentalUnitPage: PageComponentType = () => {
 
     return (
         <PageWrapper>
-            <PageHeader title={get(rentalUnit, 'name')} subTitle='Rental Unit detail' />
+            <PageHeader title={get(rentalUnit, 'name')} subTitle='Unit / Room / Bed detail' />
             <PageContent>
                 <Space direction='vertical' size={24} width='100%'>
                     <Row gutter={[24, 24]}>
@@ -126,10 +126,10 @@ const RentalUnitPage: PageComponentType = () => {
                             />
                         </Col>
                     </Row>
-                    <Card title='Child Units'>
+                    <Card title='Child Units / Rooms / Beds'>
                         <Table rowKey='id' columns={childColumns} dataSource={get(rentalUnit, 'children', [])} pagination={false} scroll={{ x: true }} />
                     </Card>
-                    <Card title='Recent Occupancies'>
+                    <Card title='Recent Tenancies'>
                         <Table rowKey='id' columns={occupancyColumns} dataSource={get(data, 'occupancies', [])} pagination={false} scroll={{ x: true }} />
                     </Card>
                 </Space>

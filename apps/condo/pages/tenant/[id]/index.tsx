@@ -118,17 +118,19 @@ const TenantPage: PageComponentType = () => {
         <PageWrapper>
             <PageHeader
                 title={getTenantName(tenant)}
-                subTitle='Tenant detail'
+                subTitle='Tenant profile, tenancy, billing, payments, ledger, maintenance, and documents'
                 extra={[
                     renderLink('Statement', `/tenant/${tenant.id}/statement`),
-                    get(tenant, ['currentOccupancy', 'id']) ? renderLink('Occupancy statement', `/occupancy/${get(tenant, ['currentOccupancy', 'id'])}/statement`) : null,
+                    get(tenant, ['currentOccupancy', 'id'])
+                        ? renderLink('Tenancy statement', `/tenancy/${get(tenant, ['currentOccupancy', 'id'])}/statement`)
+                        : renderLink('Create Tenancy', `/tenancy/check-in?tenantId=${tenant.id}&propertyId=${get(tenant, ['property', 'id'])}`),
                 ].filter(Boolean)}
             />
             <PageContent>
                 <Space direction='vertical' size={24} width='100%'>
                     <Row gutter={[24, 24]}>
                         <Col xs={24} md={8}>
-                            <Card title='Tenant Profile'>
+                            <Card title='Profile'>
                                 <Space direction='vertical' size={8}>
                                     <Typography.Text>Phone: {get(tenant, ['user', 'phone']) || '—'}</Typography.Text>
                                     <Typography.Text>Email: {get(tenant, ['user', 'email']) || '—'}</Typography.Text>
@@ -139,14 +141,17 @@ const TenantPage: PageComponentType = () => {
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
-                            <Card title='Current Occupancy'>
+                            <Card title='Tenancy'>
                                 <Space direction='vertical' size={8}>
                                     <Typography.Text>Property: {getPropertyName(get(tenant, 'property'))}</Typography.Text>
-                                    <Typography.Text>Rental Unit: {get(tenant, 'currentOccupancy') ? renderLink(getRentalUnitName(intl, get(tenant, ['currentOccupancy', 'rentalUnit'])), `/occupancy/${get(tenant, ['currentOccupancy', 'id'])}`) : '—'}</Typography.Text>
+                                    <Typography.Text>Unit / Room / Bed: {get(tenant, 'currentOccupancy') ? renderLink(getRentalUnitName(intl, get(tenant, ['currentOccupancy', 'rentalUnit'])), `/tenancy/${get(tenant, ['currentOccupancy', 'id'])}`) : '—'}</Typography.Text>
                                     <Typography.Text>Status: <StatusTag status={get(tenant, ['currentOccupancy', 'status'])} /></Typography.Text>
                                     <Typography.Text>Billing Frequency: {get(tenant, ['currentOccupancy', 'billingFrequency']) || '—'}</Typography.Text>
                                     <Typography.Text>Monthly Rate: {formatMoney(intl, get(tenant, ['currentOccupancy', 'monthlyRate']))}</Typography.Text>
                                     <Typography.Text>Statement: {renderLink('Open tenant statement', `/tenant/${tenant.id}/statement`)}</Typography.Text>
+                                    {!get(tenant, 'currentOccupancy') && (
+                                        <Typography.Text>{renderLink('Create tenancy', `/tenancy/check-in?tenantId=${tenant.id}&propertyId=${get(tenant, ['property', 'id'])}`)}</Typography.Text>
+                                    )}
                                 </Space>
                             </Card>
                         </Col>
@@ -157,7 +162,7 @@ const TenantPage: PageComponentType = () => {
                                     <Typography.Text>Student ID: {get(tenant, 'studentIdNumber') || '—'}</Typography.Text>
                                     <Typography.Text>Programme: {get(tenant, 'programme') || '—'}</Typography.Text>
                                     <Typography.Text>Level: {get(tenant, 'level') || '—'}</Typography.Text>
-                                    <Typography.Text>Ledgers: {get(data, 'ledgers', []).map(ledger => renderLink(ledger.id, `/ledger/${ledger.id}`)).reduce((prev, cur) => prev ? <>{prev}, {cur}</> : cur, null) || '—'}</Typography.Text>
+                                    <Typography.Text>Ledger: {get(data, 'ledgers', []).map(ledger => renderLink(ledger.id, `/ledger/${ledger.id}`)).reduce((prev, cur) => prev ? <>{prev}, {cur}</> : cur, null) || '—'}</Typography.Text>
                                 </Space>
                             </Card>
                         </Col>
@@ -168,10 +173,10 @@ const TenantPage: PageComponentType = () => {
                                         Tenant portal activation is not yet configured.
                                     </Typography.Text>
                                     <Typography.Text type='secondary'>
-                                        Admin-created tenants keep their passwordless resident user until a dedicated activation flow is added.
+                                        Admin-created tenants keep a passwordless tenant user until a dedicated activation flow is added.
                                     </Typography.Text>
                                     <Typography.Text type='secondary'>
-                                        Portal route is reserved at `/resident/dashboard` for authenticated resident sessions only.
+                                        Portal activation is reserved for authenticated tenant sessions only.
                                     </Typography.Text>
                                 </Space>
                             </Card>
@@ -183,6 +188,22 @@ const TenantPage: PageComponentType = () => {
                     <Card title='Recent Payments'>
                         <Table rowKey='id' columns={paymentColumns} dataSource={get(data, 'payments', [])} pagination={false} scroll={{ x: true }} />
                     </Card>
+                    <Row gutter={[24, 24]}>
+                        <Col xs={24} md={12}>
+                            <Card title='Maintenance'>
+                                <Typography.Text type='secondary'>
+                                    Maintenance tickets for this tenant will appear here when linked through tenant and tenancy records.
+                                </Typography.Text>
+                            </Card>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Card title='Documents'>
+                                <Typography.Text type='secondary'>
+                                    Tenant documents, agreements, and tenancy files will appear here.
+                                </Typography.Text>
+                            </Card>
+                        </Col>
+                    </Row>
                 </Space>
             </PageContent>
         </PageWrapper>

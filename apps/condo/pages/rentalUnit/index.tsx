@@ -152,7 +152,7 @@ const RentalUnitsPage: PageComponentType = () => {
                     : { parent: { disconnectAll: true } }),
             }
             await updateRentalUnit({ variables: { id: selectedUnit.id, data: updateData } })
-            notification.success({ message: 'Rental Unit updated' })
+            notification.success({ message: 'Unit / Room / Bed updated' })
         } else {
             const createData = {
                 ...baseData,
@@ -161,7 +161,7 @@ const RentalUnitsPage: PageComponentType = () => {
                 ...(values.parent ? { parent: { connect: { id: values.parent } } } : {}),
             }
             await createRentalUnit({ variables: { data: createData } })
-            notification.success({ message: 'Rental Unit created' })
+            notification.success({ message: 'Unit / Room / Bed created' })
         }
 
         setIsModalOpen(false)
@@ -170,7 +170,7 @@ const RentalUnitsPage: PageComponentType = () => {
 
     const columns = [
         {
-            title: 'Rental Unit',
+            title: 'Unit / Room / Bed',
             dataIndex: 'name',
             key: 'name',
             render: (_, unit) => renderLink(get(unit, 'name') || unit.id, `/rentalUnit/${unit.id}`),
@@ -227,20 +227,20 @@ const RentalUnitsPage: PageComponentType = () => {
     return (
         <PageWrapper>
             <PageHeader
-                title='Rental Units'
+                title='Units / Rooms / Beds'
                 subTitle='Rooms, beds, apartments, floors, and other rentable structures'
                 extra={canManageProperties ? [
-                    <Button key='create-rental-unit' type='primary' onClick={handleOpenCreate}>Add Rental Unit</Button>,
+                    <Button key='create-rental-unit' type='primary' onClick={handleOpenCreate}>Add Unit / Room / Bed</Button>,
                 ] : []}
             />
             <TablePageContent>
                 <Space direction='vertical' size={24} width='100%'>
                     <Typography.Text type='secondary'>
-                        Showing the latest {DEFAULT_PAGE_SIZE} rental units scoped to your organisation.
+                        Showing the latest {DEFAULT_PAGE_SIZE} rentable spaces scoped to your organisation.
                     </Typography.Text>
                     <Card title='Filters' size='small'>
                         <Space direction='vertical' size={12} width='100%'>
-                            <Input allowClear value={search} onChange={event => setSearch(event.target.value)} placeholder='Search by rental unit, type, parent, or property' />
+                            <Input allowClear value={search} onChange={event => setSearch(event.target.value)} placeholder='Search by unit, room, bed, type, parent, or property' />
                             <Space wrap>
                                 <Select allowClear showSearch placeholder='Property' value={propertyFilter} onChange={setPropertyFilter} options={propertyOptions} style={{ minWidth: 220 }} />
                                 <Select allowClear placeholder='Unit Type' value={unitTypeFilter} onChange={setUnitTypeFilter} options={UNIT_TYPES.map(value => ({ label: value, value }))} style={{ minWidth: 180 }} />
@@ -266,7 +266,7 @@ const RentalUnitsPage: PageComponentType = () => {
             <Modal
                 destroyOnClose
                 open={isModalOpen}
-                title={selectedUnit ? 'Edit Rental Unit' : 'Create Rental Unit'}
+                title={selectedUnit ? 'Edit Unit / Room / Bed' : 'Create Unit / Room / Bed'}
                 onCancel={() => setIsModalOpen(false)}
                 onOk={handleSubmit}
                 confirmLoading={modalLoading}
@@ -275,10 +275,10 @@ const RentalUnitsPage: PageComponentType = () => {
                     <Form.Item name='property' label='Property' rules={[{ required: true, message: 'Select a property' }]}>
                         <Select options={propertyOptions} showSearch />
                     </Form.Item>
-                    <Form.Item name='parent' label='Parent Rental Unit'>
+                    <Form.Item name='parent' label='Parent Unit / Room'>
                         <Select allowClear options={unitOptions.filter(option => option.value !== selectedUnit?.id)} showSearch />
                     </Form.Item>
-                    <Form.Item name='name' label='Name' rules={[{ required: true, message: 'Enter the rental unit name' }]}>
+                    <Form.Item name='name' label='Name' rules={[{ required: true, message: 'Enter the unit, room, or bed name' }]}>
                         <Input placeholder='Room A1 / Bed 01 / Flat 2B' />
                     </Form.Item>
                     <Form.Item name='unitType' label='Type' rules={[{ required: true, message: 'Select a unit type' }]}>

@@ -235,7 +235,7 @@ const OccupanciesPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy renewed' })
+            notification.success({ message: 'Tenancy renewed' })
         }
 
         if (actionState?.type === 'checkOut') {
@@ -251,7 +251,7 @@ const OccupanciesPage: PageComponentType = () => {
                 },
             })
             const arrears = get(result, ['data', 'result', 'arrears'])
-            notification.success({ message: `Occupancy checked out${arrears ? ` with arrears ${arrears.amount} ${arrears.currencyCode}` : ''}` })
+            notification.success({ message: `Tenancy checked out${arrears ? ` with arrears ${arrears.amount} ${arrears.currencyCode}` : ''}` })
         }
 
         if (actionState?.type === 'transfer') {
@@ -270,7 +270,7 @@ const OccupanciesPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy transferred' })
+            notification.success({ message: 'Tenancy transferred' })
         }
 
         if (actionState?.type === 'cancel') {
@@ -283,7 +283,7 @@ const OccupanciesPage: PageComponentType = () => {
                     },
                 },
             })
-            notification.success({ message: 'Occupancy canceled' })
+            notification.success({ message: 'Tenancy canceled' })
         }
 
         closeAction()
@@ -302,7 +302,7 @@ const OccupanciesPage: PageComponentType = () => {
             render: (_, occupancy) => getPropertyName(get(occupancy, 'property')),
         },
         {
-            title: 'Rental Unit',
+            title: 'Unit / Room / Bed',
             key: 'rentalUnit',
             render: (_, occupancy) => renderLink(getRentalUnitName(intl, get(occupancy, 'rentalUnit')), `/rentalUnit/${get(occupancy, ['rentalUnit', 'id'])}`),
         },
@@ -321,7 +321,7 @@ const OccupanciesPage: PageComponentType = () => {
 
                 return (
                     <AntSpace wrap>
-                        {renderLink('View occupancy', `/occupancy/${occupancy.id}`)}
+                        {renderLink('View tenancy', `/tenancy/${occupancy.id}`)}
                         {renderLink('View tenant', `/tenant/${tenantId}`)}
                         {ledger ? renderLink('View ledger', `/ledger/${ledger.id}`) : <Typography.Text type='secondary'>No ledger</Typography.Text>}
                         {renderLink('Record payment', `/payment?mode=record&tenantId=${tenantId}&occupancyId=${occupancy.id}&propertyId=${get(occupancy, ['property', 'id'])}&rentalUnitId=${get(occupancy, ['rentalUnit', 'id'])}`)}
@@ -352,10 +352,10 @@ const OccupanciesPage: PageComponentType = () => {
     return (
         <PageWrapper>
             <PageHeader
-                title='Occupancies'
+                title='Tenancies'
                 subTitle='Check-ins, active stays, renewals, transfers, and check-outs'
                 extra={canManageProperties ? [
-                    <Link key='check-in-wizard' href='/occupancy/check-in'>
+                    <Link key='check-in-wizard' href='/tenancy/check-in'>
                         <Button type='primary'>Check In Tenant</Button>
                     </Link>,
                 ] : []}
@@ -363,7 +363,7 @@ const OccupanciesPage: PageComponentType = () => {
             <TablePageContent>
                 <Space direction='vertical' size={24} width='100%'>
                     <Typography.Text type='secondary'>
-                        Active and historical occupancy agreements for rental units in your organisation.
+                        Active and historical tenancy agreements for units, rooms, and beds in your organisation.
                     </Typography.Text>
                     <Card title='Filters' size='small'>
                         <AntSpace direction='vertical' size={12} style={{ width: '100%' }}>
@@ -382,7 +382,7 @@ const OccupanciesPage: PageComponentType = () => {
                                 ]} onChange={setStatusFilter} style={{ minWidth: 180 }} />
                                 <Select allowClear showSearch placeholder='Property' value={propertyFilter} options={propertyOptions} onChange={setPropertyFilter} style={{ minWidth: 220 }} />
                                 <Select allowClear showSearch placeholder='Tenant' value={tenantFilter} options={tenantOptions} onChange={setTenantFilter} style={{ minWidth: 220 }} />
-                                <Select allowClear showSearch placeholder='Rental Unit' value={rentalUnitFilter} options={rentalUnitOptions} onChange={setRentalUnitFilter} style={{ minWidth: 220 }} />
+                                <Select allowClear showSearch placeholder='Unit / Room / Bed' value={rentalUnitFilter} options={rentalUnitOptions} onChange={setRentalUnitFilter} style={{ minWidth: 220 }} />
                                 <DatePicker.RangePicker value={dateRange || undefined} onChange={value => setDateRange(value as [dayjs.Dayjs | null, dayjs.Dayjs | null] | null)} />
                             </AntSpace>
                         </AntSpace>
@@ -394,7 +394,7 @@ const OccupanciesPage: PageComponentType = () => {
             <Modal
                 destroyOnClose
                 open={isModalOpen}
-                title={`Occupancy ${actionState?.type}`}
+                title={`Tenancy ${actionState?.type}`}
                 onCancel={closeAction}
                 onOk={handleSubmit}
                 confirmLoading={modalLoading}
@@ -403,7 +403,7 @@ const OccupanciesPage: PageComponentType = () => {
                     {actionState?.type === 'renew' && (
                         <>
                             <Typography.Paragraph type='secondary'>
-                                Review the updated end date and pricing terms before renewing this occupancy.
+                                Review the updated end date and pricing terms before renewing this tenancy.
                             </Typography.Paragraph>
                             <Form.Item name='expectedEndDate' label='New Expected End Date' rules={[{ required: true, message: 'Select a new end date' }]}>
                                 <DatePicker style={{ width: '100%' }} />
@@ -434,9 +434,9 @@ const OccupanciesPage: PageComponentType = () => {
                     {actionState?.type === 'transfer' && (
                         <>
                             <Typography.Paragraph type='secondary'>
-                                Transfer keeps existing accounting services in place and moves the resident to a different rentable unit.
+                                Transfer keeps existing accounting services in place and moves the tenant to a different unit, room, or bed.
                             </Typography.Paragraph>
-                            <Form.Item name='targetRentalUnitId' label='Target Rental Unit' rules={[{ required: true, message: 'Select the destination unit' }]}>
+                            <Form.Item name='targetRentalUnitId' label='Target Unit / Room / Bed' rules={[{ required: true, message: 'Select the destination unit' }]}>
                                 <Select showSearch options={rentalUnitOptions.filter(option => option.value !== get(actionState, ['occupancy', 'rentalUnit', 'id']))} />
                             </Form.Item>
                             <AntSpace size={16} style={{ display: 'flex' }}>
@@ -462,7 +462,7 @@ const OccupanciesPage: PageComponentType = () => {
                     )}
                     {actionState?.type === 'cancel' && (
                         <Typography.Text type='secondary'>
-                            This cancels a planned occupancy. No new lifecycle logic is implemented here beyond the existing backend mutation.
+                            This cancels a planned tenancy.
                         </Typography.Text>
                     )}
                 </Form>

@@ -1,9 +1,8 @@
 const get = require('lodash/get')
 
 const { GQLError, GQLErrorCode: { BAD_USER_INPUT } } = require('@open-condo/keystone/errors')
-const { GQLCustomSchema, find, getById } = require('@open-condo/keystone/schema')
+const { GQLCustomSchema, getById } = require('@open-condo/keystone/schema')
 
-const { Contact } = require('@condo/domains/contact/utils/serverSchema')
 const access = require('@condo/domains/resident/access/CreateAdminTenantProfileService')
 const { Resident } = require('@condo/domains/resident/utils/serverSchema')
 const { RESIDENT } = require('@condo/domains/user/constants/common')
@@ -36,39 +35,6 @@ const ERRORS = {
 function normalizeOptionalString (value) {
     const normalized = String(value || '').trim()
     return normalized || null
-}
-
-async function createCompatContactIfNeeded (context, {
-    dv,
-    sender,
-    organizationId,
-    propertyId,
-    name,
-    phone,
-    email,
-}) {
-    const [existingContact] = await find('Contact', {
-        organization: { id: organizationId },
-        property: { id: propertyId },
-        unitName: null,
-        unitType: null,
-        phone,
-        deletedAt: null,
-    })
-
-    if (existingContact) return existingContact
-
-    return await Contact.create(context, {
-        dv,
-        sender,
-        organization: { connect: { id: organizationId } },
-        property: { connect: { id: propertyId } },
-        unitName: null,
-        unitType: null,
-        name,
-        phone,
-        email,
-    })
 }
 
 const CreateAdminTenantProfileService = new GQLCustomSchema('CreateAdminTenantProfileService', {
@@ -139,16 +105,6 @@ const CreateAdminTenantProfileService = new GQLCustomSchema('CreateAdminTenantPr
                         emergencyContactPhone: normalizeOptionalString(emergencyContactPhone),
                         institutionName: normalizeOptionalString(institutionName),
                         studentIdNumber: normalizeOptionalString(studentIdNumber),
-                    })
-
-                    await createCompatContactIfNeeded(context, {
-                        dv,
-                        sender,
-                        organizationId,
-                        propertyId: property.id,
-                        name: normalizedName,
-                        phone: normalizedPhone,
-                        email: normalizeOptionalString(email),
                     })
 
                     return await getById('Resident', resident.id)

@@ -166,7 +166,7 @@ const PaymentPage: PageComponentType = () => {
                     renderLink('Back to payments', '/payment'),
                     renderLink('Reversals report', '/payment/reversals'),
                     get(payment, ['tenant', 'id']) ? renderLink('Tenant statement', `/tenant/${get(payment, ['tenant', 'id'])}/statement`) : null,
-                    get(payment, ['occupancy', 'id']) ? renderLink('Occupancy statement', `/occupancy/${get(payment, ['occupancy', 'id'])}/statement`) : null,
+                    get(payment, ['occupancy', 'id']) ? renderLink('Tenancy statement', `/tenancy/${get(payment, ['occupancy', 'id'])}/statement`) : null,
                     ...(canReverse ? [
                         <Button key='reverse-payment' type='secondary' onClick={() => setIsModalOpen(true)}>Reverse Payment</Button>,
                     ] : []),
@@ -180,8 +180,8 @@ const PaymentPage: PageComponentType = () => {
                                 <Space direction='vertical' size={8}>
                                     <Typography.Text>Tenant: {renderLink(getTenantName(get(payment, 'tenant')), `/tenant/${get(payment, ['tenant', 'id'])}`)}</Typography.Text>
                                     <Typography.Text>Property: {getPropertyName(get(payment, 'property'))}</Typography.Text>
-                                    <Typography.Text>Rental Unit: {getRentalUnitName(intl, get(payment, 'rentalUnit'))}</Typography.Text>
-                                    <Typography.Text>Occupancy: {get(payment, ['occupancy', 'id']) ? renderLink(get(payment, ['occupancy', 'id']), `/occupancy/${get(payment, ['occupancy', 'id'])}`) : '—'}</Typography.Text>
+                                    <Typography.Text>Unit / Room / Bed: {getRentalUnitName(intl, get(payment, 'rentalUnit'))}</Typography.Text>
+                                    <Typography.Text>Tenancy: {get(payment, ['occupancy', 'id']) ? renderLink(get(payment, ['occupancy', 'id']), `/tenancy/${get(payment, ['occupancy', 'id'])}`) : '—'}</Typography.Text>
                                     <Typography.Text>Amount: {formatMoney(intl, get(payment, 'amount'), get(payment, 'currencyCode'))}</Typography.Text>
                                     <Typography.Text>Status: <StatusTag status={get(payment, 'status')} /></Typography.Text>
                                 </Space>
@@ -196,7 +196,7 @@ const PaymentPage: PageComponentType = () => {
                                     <Typography.Text>Received Date: {formatDate(get(payment, 'depositedDate') || get(payment, 'confirmedAt'))}</Typography.Text>
                                     <Typography.Text>Purpose: {get(payment, 'purpose') || '—'}</Typography.Text>
                                     <Typography.Text>Linked Receipt: {get(payment, ['receipt', 'id']) ? renderLink(get(payment, ['receipt', 'number']) || get(payment, ['receipt', 'id']), `/receipt/${get(payment, ['receipt', 'id'])}`) : '—'}</Typography.Text>
-                                    <Typography.Text>Statement: {get(payment, ['occupancy', 'id']) ? renderLink('Open occupancy statement', `/occupancy/${get(payment, ['occupancy', 'id'])}/statement`) : renderLink('Open tenant statement', `/tenant/${get(payment, ['tenant', 'id'])}/statement`)}</Typography.Text>
+                                    <Typography.Text>Statement: {get(payment, ['occupancy', 'id']) ? renderLink('Open tenancy statement', `/tenancy/${get(payment, ['occupancy', 'id'])}/statement`) : renderLink('Open tenant statement', `/tenant/${get(payment, ['tenant', 'id'])}/statement`)}</Typography.Text>
                                 </Space>
                             </Card>
                         </Col>

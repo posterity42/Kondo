@@ -197,7 +197,7 @@ const MenuItems: React.FC = () => {
     const hasAccessToIncidents = role?.canReadIncidents || false
     const hasAccessToEmployees = role?.canReadEmployees || false
     const hasAccessToProperties = role?.canReadProperties || false
-    const hasAccessToContacts = role?.canReadContacts || false
+    const hasAccessToTenants = role?.canReadResidents || role?.canReadContacts || false
     const hasAccessToAnalytics = role?.canReadAnalytics
     const hasAccessToMeters = role?.canReadMeters || false
     const hasAccessToServices = role?.canReadServices || false
@@ -278,15 +278,15 @@ const MenuItems: React.FC = () => {
                     id: 'menu-item-rental-unit',
                     path: 'rentalUnit',
                     icon: AllIcons['Building'],
-                    label: 'Rental Units',
+                    label: 'Units / Rooms / Beds',
                     labelRaw: true,
                     access: hasAccessToProperties,
                 },
                 {
-                    id: 'menu-item-occupancy',
-                    path: 'occupancy',
+                    id: 'menu-item-tenancy',
+                    path: 'tenancy',
                     icon: AllIcons['Building'],
-                    label: 'Occupancies',
+                    label: 'Tenancies',
                     labelRaw: true,
                     access: hasAccessToProperties,
                 },
@@ -296,19 +296,12 @@ const MenuItems: React.FC = () => {
             key: RESIDENTS_CATEGORY,
             items: [
                 {
-                    id: 'menu-item-contact',
-                    path: 'contact',
-                    icon: AllIcons['Contacts'],
-                    label: 'global.section.contacts',
-                    access: isManagingCompany && hasAccessToContacts,
-                },
-                {
                     id: 'menu-item-tenant',
                     path: 'tenant',
                     icon: AllIcons['Contacts'],
                     label: 'Tenants',
                     labelRaw: true,
-                    access: isManagingCompany && hasAccessToContacts,
+                    access: isManagingCompany && hasAccessToTenants,
                 },
             ].filter(checkItemAccess),
         },
@@ -445,7 +438,7 @@ const MenuItems: React.FC = () => {
                 },
             ].filter(checkItemAccess),
         },
-    ]), [hasAccessToAnalytics, isManagingCompany, hasAccessToTickets, hasAccessToIncidents, hasAccessToNewsItems, hasAccessToProperties, hasAccessToContacts, hasAccessToEmployees, hasAccessToMarketplace, isSPPOrg, hasAccessToBilling, anyReceiptsLoaded, sppBillingId, hasAccessToMeters, hasAccessToServices, connectedAppsIds, hasAccessToSettings, hasAccessToTour, isNoServiceProviderOrganization])
+    ]), [hasAccessToAnalytics, isManagingCompany, hasAccessToTickets, hasAccessToIncidents, hasAccessToNewsItems, hasAccessToProperties, hasAccessToTenants, hasAccessToEmployees, hasAccessToMarketplace, isSPPOrg, hasAccessToBilling, anyReceiptsLoaded, sppBillingId, hasAccessToMeters, hasAccessToServices, connectedAppsIds, hasAccessToSettings, hasAccessToTour, isNoServiceProviderOrganization])
 
     return (
         <div>
